@@ -22,7 +22,10 @@ with the Metropolis test on, against deep ensemble and MC dropout baselines. It 
   test (Eq. 33), the plain test on noisy estimates (Eq. 19), and unadjusted dynamics,
   including the paper's step-size tuning recipe run as written and the softened test
   extended to formal convergence (the only chain in the study to pass the
-  stationarity rule).
+  stationarity rule),
+- an uncertainty-quality comparison (error-retention curves, reliability, member
+  scaling, flag overlap) and a fake-image test (noise, Fashion-MNIST, inverted
+  digits) measuring who stays confident on garbage and whose uncertainty flags it.
 
 ## Layout
 
