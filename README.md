@@ -40,6 +40,9 @@ results/figures/, results/tables/   figures, logs, and small artifacts
 rts/metrics.py                  Sokal autocorrelation time, ESS
 plots/style.py                  shared palette
 vendor/                         upstream sampler, unmodified
+legacy/                         earlier studies: the analytic comparison and the
+                                ResNet-50/MNIST five-sampler run (SGLD, SGHMC,
+                                MCLMC included), with their chain traces
 ```
 
 ## Running

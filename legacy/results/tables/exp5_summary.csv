@@ -1,0 +1,3 @@
+kind,dt,it_per_s,post_val_ce_med,post_val_acc_med,tau_probe_med_steps,ke_over_D_final,hmc_momentum_resets,ens_n_used,ens_test_acc,ens_test_nll,ens_test_ece
+rt,1e-05,3.51692,0.0831569,0.975098,59.0848,0.500188,0,9,0.9894,0.0344768,0.00831791
+hmc,1e-05,3.21449,0.0558892,0.981934,10,0.500198,0,9,0.9893,0.03438,0.00500286
