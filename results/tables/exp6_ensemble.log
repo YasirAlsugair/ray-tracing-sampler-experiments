@@ -1,0 +1,23 @@
+[mlp] member 0: acc=0.9691 nll=0.0989
+[mlp] member 1: acc=0.9746 nll=0.0869
+[mlp] member 2: acc=0.9698 nll=0.1019
+[mlp] member 3: acc=0.9712 nll=0.0982
+[mlp] member 4: acc=0.9693 nll=0.0988
+[mlp] member 5: acc=0.9693 nll=0.0945
+[mlp] member 6: acc=0.9695 nll=0.1002
+[mlp] member 7: acc=0.9716 nll=0.0925
+[mlp] member 8: acc=0.9696 nll=0.0982
+[mlp] member 9: acc=0.9690 nll=0.1008
+[mlp] ensemble of 10: acc=0.9775 nll=0.0787 ece=0.0149 (141s)
+[cnn] member 0: acc=0.9847 nll=0.0463
+[cnn] member 1: acc=0.9883 nll=0.0366
+[cnn] member 2: acc=0.9857 nll=0.0423
+[cnn] member 3: acc=0.9869 nll=0.0380
+[cnn] member 4: acc=0.9878 nll=0.0394
+[cnn] member 5: acc=0.9862 nll=0.0399
+[cnn] member 6: acc=0.9871 nll=0.0387
+[cnn] member 7: acc=0.9853 nll=0.0398
+[cnn] member 8: acc=0.9877 nll=0.0396
+[cnn] member 9: acc=0.9872 nll=0.0383
+[cnn] ensemble of 10: acc=0.9904 nll=0.0310 ece=0.0071 (147s)
+saved /Users/yasiralsugair/UofT/empirical/results/tables/exp6_ensemble_summary.csv

@@ -1,0 +1,43 @@
+device=mps
+[mlp] D=50890  ln_post(point)=-4,069  |grad|=13211.3  grad_eval=0.45s
+Accepted: 95.000000%
+[mlp] L= 10 dt=1e-05  acc=0.95  ln_post: -4,066 -> -4,056  (2s)
+Accepted: 100.000000%
+[mlp] L= 10 dt=3e-05  acc=1.00  ln_post: -4,056 -> -3,925  (2s)
+Accepted: 95.000000%
+[mlp] L= 10 dt=1e-04  acc=0.95  ln_post: -4,023 -> -3,742  (2s)
+Accepted: 95.000000%
+[mlp] L= 10 dt=3e-04  acc=1.00  ln_post: -4,069 -> -3,604  (2s)
+Accepted: 0.000000%
+[mlp] L= 10 dt=1e-03  acc=0.00  ln_post: -4,069 -> -4,069  (2s)
+Accepted: 95.000000%
+[mlp] L= 30 dt=1e-05  acc=0.95  ln_post: -4,073 -> -3,986  (5s)
+Accepted: 100.000000%
+[mlp] L= 30 dt=3e-05  acc=1.00  ln_post: -4,015 -> -3,732  (5s)
+Accepted: 95.000000%
+[mlp] L= 30 dt=1e-04  acc=0.95  ln_post: -3,751 -> -3,617  (5s)
+Accepted: 100.000000%
+[mlp] L= 30 dt=3e-04  acc=1.00  ln_post: -3,741 -> -3,658  (5s)
+Accepted: 0.000000%
+[mlp] L= 30 dt=1e-03  acc=0.00  ln_post: -4,069 -> -4,069  (5s)
+[cnn] D=12810  ln_post(point)=-2,417  |grad|=19821.6  grad_eval=0.78s
+Accepted: 100.000000%
+[cnn] L= 10 dt=1e-05  acc=1.00  ln_post: -2,414 -> -2,389  (111s)
+Accepted: 100.000000%
+[cnn] L= 10 dt=3e-05  acc=1.00  ln_post: -2,406 -> -2,180  (109s)
+Accepted: 100.000000%
+[cnn] L= 10 dt=1e-04  acc=1.00  ln_post: -2,262 -> -1,727  (106s)
+Accepted: 55.000000%
+[cnn] L= 10 dt=3e-04  acc=0.58  ln_post: -2,417 -> -1,635  (108s)
+Accepted: 0.000000%
+[cnn] L= 10 dt=1e-03  acc=0.00  ln_post: -2,417 -> -2,417  (107s)
+Accepted: 100.000000%
+[cnn] L= 30 dt=1e-05  acc=1.00  ln_post: -2,392 -> -2,153  (314s)
+Accepted: 100.000000%
+[cnn] L= 30 dt=3e-05  acc=1.00  ln_post: -2,253 -> -1,758  (312s)
+Accepted: 100.000000%
+[cnn] L= 30 dt=1e-04  acc=1.00  ln_post: -1,784 -> -1,634  (312s)
+Accepted: 0.000000%
+[cnn] L= 30 dt=3e-04  acc=0.00  ln_post: -2,417 -> -2,417  (310s)
+Accepted: 0.000000%
+[cnn] L= 30 dt=1e-03  acc=0.00  ln_post: -2,417 -> -2,417  (332s)

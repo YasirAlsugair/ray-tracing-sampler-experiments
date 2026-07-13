@@ -1,0 +1,13 @@
+[dt=0.00035 rr=5] sigma_sto = 1,142 nats -> eq19 exponent 1.00e+00
+[dt=0.00035 rr=5] 100,000 steps in 7.6 min -> misfit 3,662, ||theta||^2 187, eq19 rejected 3331/3333 windows, saved exp6_mb19_dt0.00035_rr5.npz
+[dt=0.00035 rr=50] sigma_sto = 1,142 nats -> eq19 exponent 1.00e+00
+[dt=0.00035 rr=50] 100,000 steps in 7.5 min -> misfit 3,647, ||theta||^2 186, eq19 rejected 3331/3333 windows, saved exp6_mb19_dt0.00035_rr50.npz
+[dt=0.0001 rr=5] sigma_sto = 1,142 nats -> eq19 exponent 1.00e+00
+[dt=0.0001 rr=5] 100,000 steps in 7.5 min -> misfit 3,617, ||theta||^2 176, eq19 rejected 3329/3333 windows, saved exp6_mb19_dt0.0001_rr5.npz
+[dt=0.0001 rr=50] sigma_sto = 1,142 nats -> eq19 exponent 1.00e+00
+[dt=0.0001 rr=50] 100,000 steps in 7.5 min -> misfit 3,617, ||theta||^2 176, eq19 rejected 3329/3333 windows, saved exp6_mb19_dt0.0001_rr50.npz
+[dt=3e-05 rr=5] sigma_sto = 1,142 nats -> eq19 exponent 1.00e+00
+[dt=3e-05 rr=5] 100,000 steps in 7.6 min -> misfit 3,775, ||theta||^2 174, eq19 rejected 3329/3333 windows, saved exp6_mb19_dt3e-05_rr5.npz
+[dt=3e-05 rr=50] sigma_sto = 1,142 nats -> eq19 exponent 1.00e+00
+[dt=3e-05 rr=50] 100,000 steps in 7.5 min -> misfit 3,777, ||theta||^2 174, eq19 rejected 3329/3333 windows, saved exp6_mb19_dt3e-05_rr50.npz
+sweep complete

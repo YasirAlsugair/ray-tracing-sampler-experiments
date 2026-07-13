@@ -1,0 +1,18 @@
+Accepted: 92.500000%
+[tune:mlp] dt=3.0e-04 acc=0.95
+Accepted: 82.500000%
+[tune:mlp] dt=3.5e-04 acc=0.85
+Accepted: 97.500000%
+[tune:mlp] dt=4.0e-04 acc=0.97
+[tune:mlp] chosen dt=3.5e-04 (acc=0.85), launching 2000 trajectories at L=30
+Accepted: 97.150000%
+[mlp] 2000 trajectories (L=30, dt=3e-04) in 9.6 min, acc=0.97, saved /Users/yasiralsugair/UofT/empirical/results/tables/exp6_rt_chain_mlp.npz
+Accepted: 95.000000%
+[tune:cnn] dt=1.5e-04 acc=0.95
+Accepted: 95.000000%
+[tune:cnn] dt=2.0e-04 acc=0.95
+Accepted: 60.000000%
+[tune:cnn] dt=2.5e-04 acc=0.63
+[tune:cnn] chosen dt=1.5e-04 (acc=0.95), launching 600 trajectories at L=30
+Accepted: 99.166667%
+[cnn] 600 trajectories (L=30, dt=1e-04) in 1232.8 min, acc=0.99, saved /Users/yasiralsugair/UofT/empirical/results/tables/exp6_rt_chain_cnn.npz

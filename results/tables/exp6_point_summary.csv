@@ -1,0 +1,3 @@
+model,D,test_acc,test_nll,train_seconds,n_train
+mlp,50890,0.9734,0.0928,16,60000
+cnn,12810,0.9847,0.0474,22,60000

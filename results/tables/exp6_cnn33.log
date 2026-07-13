@@ -1,0 +1,69 @@
+[cnn tune33 rr=5] dt=0.00035  Eq.33 acceptance=0.17
+[cnn tune33 rr=5] dt=0.0002  Eq.33 acceptance=0.35
+[cnn tune33 rr=5] dt=0.0001  Eq.33 acceptance=0.61
+[cnn tune33 rr=5] dt=5e-05  Eq.33 acceptance=0.62
+[cnn tune33] chosen dt=0.0001
+[dt=0.0001 rr=5] sigma_sto = 1,139 nats -> eq33 exponent 8.78e-04
+[dt=0.0001 rr=5] 100,000 steps in 11.7 min -> misfit 874, ||theta||^2 1,088, eq33 rejected 1228/3333 windows, saved exp6_mb33_cnn_dt0.0001_rr5.npz
+[eq33 dt=0.0001 rr=5] resuming at step 100,000 with stored sigma_sto=1,139; misfit 874 (drift -58 vs noise 158, level), norm 1,088 of shell 12,810 (drift +230 vs noise 67, moving)
+[dt=0.0001 rr=5] sigma_sto = 1,139 nats -> eq33 exponent 8.78e-04
+[dt=0.0001 rr=5] 250,000 steps in 28.8 min -> misfit 509, ||theta||^2 3,094, eq33 rejected 3048/8333 windows, saved exp6_mb33_cnn_dt0.0001_rr5_part2.npz
+[eq33 dt=0.0001 rr=5] step 350,000 -> still in transit; misfit 509 (drift +148 vs noise 316, level), norm 3,094 of shell 12,810 (drift +560 vs noise 162, moving)
+[dt=0.0001 rr=5] sigma_sto = 1,139 nats -> eq33 exponent 8.78e-04
+[dt=0.0001 rr=5] 250,000 steps in 28.8 min -> misfit 344, ||theta||^2 4,474, eq33 rejected 3448/8333 windows, saved exp6_mb33_cnn_dt0.0001_rr5_part3.npz
+[eq33 dt=0.0001 rr=5] step 600,000 -> still in transit; misfit 344 (drift +29 vs noise 316, level), norm 4,474 of shell 12,810 (drift +830 vs noise 240, moving)
+[dt=0.0001 rr=5] sigma_sto = 1,139 nats -> eq33 exponent 8.78e-04
+[dt=0.0001 rr=5] 250,000 steps in 28.8 min -> misfit 168, ||theta||^2 5,591, eq33 rejected 3598/8333 windows, saved exp6_mb33_cnn_dt0.0001_rr5_part4.npz
+[eq33 dt=0.0001 rr=5] step 850,000 -> still in transit; misfit 168 (drift -91 vs noise 346, level), norm 5,591 of shell 12,810 (drift +949 vs noise 274, moving)
+[dt=0.0001 rr=5] sigma_sto = 1,139 nats -> eq33 exponent 8.78e-04
+[dt=0.0001 rr=5] 250,000 steps in 28.8 min -> misfit 796, ||theta||^2 6,379, eq33 rejected 3930/8333 windows, saved exp6_mb33_cnn_dt0.0001_rr5_part5.npz
+[eq33 dt=0.0001 rr=5] step 1,100,000 -> still in transit; misfit 796 (drift +15 vs noise 435, level), norm 6,379 of shell 12,810 (drift +875 vs noise 253, moving)
+[dt=0.0001 rr=5] sigma_sto = 1,139 nats -> eq33 exponent 8.78e-04
+[dt=0.0001 rr=5] 250,000 steps in 28.8 min -> misfit 356, ||theta||^2 7,049, eq33 rejected 3977/8333 windows, saved exp6_mb33_cnn_dt0.0001_rr5_part6.npz
+[eq33 dt=0.0001 rr=5] step 1,350,000 -> still in transit; misfit 356 (drift +3 vs noise 393, level), norm 7,049 of shell 12,810 (drift +924 vs noise 267, moving)
+[dt=0.0001 rr=5] sigma_sto = 1,139 nats -> eq33 exponent 8.78e-04
+[dt=0.0001 rr=5] 250,000 steps in 28.8 min -> misfit 293, ||theta||^2 7,673, eq33 rejected 4011/8333 windows, saved exp6_mb33_cnn_dt0.0001_rr5_part7.npz
+[eq33 dt=0.0001 rr=5] step 1,600,000 -> still in transit; misfit 293 (drift +1 vs noise 405, level), norm 7,673 of shell 12,810 (drift +1,033 vs noise 299, moving)
+[dt=0.0001 rr=5] sigma_sto = 1,139 nats -> eq33 exponent 8.78e-04
+[dt=0.0001 rr=5] 250,000 steps in 28.8 min -> misfit 180, ||theta||^2 8,197, eq33 rejected 4294/8333 windows, saved exp6_mb33_cnn_dt0.0001_rr5_part8.npz
+[eq33 dt=0.0001 rr=5] step 1,850,000 -> still in transit; misfit 180 (drift +39 vs noise 424, level), norm 8,197 of shell 12,810 (drift +1,097 vs noise 317, moving)
+[dt=0.0001 rr=5] sigma_sto = 1,139 nats -> eq33 exponent 8.78e-04
+[dt=0.0001 rr=5] 250,000 steps in 28.8 min -> misfit 679, ||theta||^2 8,557, eq33 rejected 4353/8333 windows, saved exp6_mb33_cnn_dt0.0001_rr5_part9.npz
+[eq33 dt=0.0001 rr=5] step 2,100,000 -> still in transit; misfit 679 (drift +45 vs noise 423, level), norm 8,557 of shell 12,810 (drift +948 vs noise 276, moving)
+[dt=0.0001 rr=5] sigma_sto = 1,139 nats -> eq33 exponent 8.78e-04
+[dt=0.0001 rr=5] 250,000 steps in 28.8 min -> misfit 1,919, ||theta||^2 8,934, eq33 rejected 4458/8333 windows, saved exp6_mb33_cnn_dt0.0001_rr5_part10.npz
+[eq33 dt=0.0001 rr=5] step 2,350,000 -> still in transit; misfit 1,919 (drift -24 vs noise 410, level), norm 8,934 of shell 12,810 (drift +908 vs noise 263, moving)
+[dt=0.0001 rr=5] sigma_sto = 1,139 nats -> eq33 exponent 8.78e-04
+[dt=0.0001 rr=5] 250,000 steps in 29.2 min -> misfit 226, ||theta||^2 9,295, eq33 rejected 4746/8333 windows, saved exp6_mb33_cnn_dt0.0001_rr5_part11.npz
+[eq33 dt=0.0001 rr=5] step 2,600,000 -> still in transit; misfit 226 (drift +63 vs noise 425, level), norm 9,295 of shell 12,810 (drift +954 vs noise 276, moving)
+[dt=0.0001 rr=5] sigma_sto = 1,139 nats -> eq33 exponent 8.78e-04
+[dt=0.0001 rr=5] 250,000 steps in 28.8 min -> misfit 176, ||theta||^2 9,472, eq33 rejected 4802/8333 windows, saved exp6_mb33_cnn_dt0.0001_rr5_part12.npz
+[eq33 dt=0.0001 rr=5] step 2,850,000 -> still in transit; misfit 176 (drift +107 vs noise 473, level), norm 9,472 of shell 12,810 (drift +822 vs noise 239, moving)
+[dt=0.0001 rr=5] sigma_sto = 1,139 nats -> eq33 exponent 8.78e-04
+[dt=0.0001 rr=5] 250,000 steps in 28.8 min -> misfit 223, ||theta||^2 9,652, eq33 rejected 4733/8333 windows, saved exp6_mb33_cnn_dt0.0001_rr5_part13.npz
+[eq33 dt=0.0001 rr=5] step 3,100,000 -> still in transit; misfit 223 (drift -70 vs noise 472, level), norm 9,652 of shell 12,810 (drift +684 vs noise 200, moving)
+[dt=0.0001 rr=5] sigma_sto = 1,139 nats -> eq33 exponent 8.78e-04
+[dt=0.0001 rr=5] 250,000 steps in 28.8 min -> misfit 621, ||theta||^2 9,958, eq33 rejected 4725/8333 windows, saved exp6_mb33_cnn_dt0.0001_rr5_part14.npz
+[eq33 dt=0.0001 rr=5] step 3,350,000 -> still in transit; misfit 621 (drift +28 vs noise 492, level), norm 9,958 of shell 12,810 (drift +732 vs noise 214, moving)
+[dt=0.0001 rr=5] sigma_sto = 1,139 nats -> eq33 exponent 8.78e-04
+[dt=0.0001 rr=5] 250,000 steps in 28.8 min -> misfit 136, ||theta||^2 10,256, eq33 rejected 4659/8333 windows, saved exp6_mb33_cnn_dt0.0001_rr5_part15.npz
+[eq33 dt=0.0001 rr=5] step 3,600,000 -> still in transit; misfit 136 (drift +15 vs noise 519, level), norm 10,256 of shell 12,810 (drift +922 vs noise 269, moving)
+[dt=0.0001 rr=5] sigma_sto = 1,139 nats -> eq33 exponent 8.78e-04
+[dt=0.0001 rr=5] 250,000 steps in 28.8 min -> misfit 472, ||theta||^2 10,452, eq33 rejected 4679/8333 windows, saved exp6_mb33_cnn_dt0.0001_rr5_part16.npz
+[eq33 dt=0.0001 rr=5] step 3,850,000 -> still in transit; misfit 472 (drift +8 vs noise 486, level), norm 10,452 of shell 12,810 (drift +1,031 vs noise 299, moving)
+[dt=0.0001 rr=5] sigma_sto = 1,139 nats -> eq33 exponent 8.78e-04
+[dt=0.0001 rr=5] 250,000 steps in 28.8 min -> misfit 374, ||theta||^2 10,638, eq33 rejected 4839/8333 windows, saved exp6_mb33_cnn_dt0.0001_rr5_part17.npz
+[eq33 dt=0.0001 rr=5] step 4,100,000 -> still in transit; misfit 374 (drift -68 vs noise 498, level), norm 10,638 of shell 12,810 (drift +1,018 vs noise 296, moving)
+[dt=0.0001 rr=5] sigma_sto = 1,139 nats -> eq33 exponent 8.78e-04
+[dt=0.0001 rr=5] 250,000 steps in 28.8 min -> misfit 1,018, ||theta||^2 10,740, eq33 rejected 4687/8333 windows, saved exp6_mb33_cnn_dt0.0001_rr5_part18.npz
+[eq33 dt=0.0001 rr=5] step 4,350,000 -> still in transit; misfit 1,018 (drift -31 vs noise 472, level), norm 10,740 of shell 12,810 (drift +853 vs noise 251, moving)
+[dt=0.0001 rr=5] sigma_sto = 1,139 nats -> eq33 exponent 8.78e-04
+[dt=0.0001 rr=5] 250,000 steps in 28.8 min -> misfit 459, ||theta||^2 10,925, eq33 rejected 4889/8333 windows, saved exp6_mb33_cnn_dt0.0001_rr5_part19.npz
+[eq33 dt=0.0001 rr=5] step 4,600,000 -> still in transit; misfit 459 (drift +50 vs noise 523, level), norm 10,925 of shell 12,810 (drift +770 vs noise 225, moving)
+[dt=0.0001 rr=5] sigma_sto = 1,139 nats -> eq33 exponent 8.78e-04
+[dt=0.0001 rr=5] 250,000 steps in 28.8 min -> misfit 683, ||theta||^2 11,030, eq33 rejected 4897/8333 windows, saved exp6_mb33_cnn_dt0.0001_rr5_part20.npz
+[eq33 dt=0.0001 rr=5] step 4,850,000 -> still in transit; misfit 683 (drift +115 vs noise 530, level), norm 11,030 of shell 12,810 (drift +752 vs noise 219, moving)
+[dt=0.0001 rr=5] sigma_sto = 1,139 nats -> eq33 exponent 8.78e-04
+[dt=0.0001 rr=5] 250,000 steps in 28.8 min -> misfit 706, ||theta||^2 11,093, eq33 rejected 4708/8333 windows, saved exp6_mb33_cnn_dt0.0001_rr5_part21.npz
+[eq33 dt=0.0001 rr=5] step 5,100,000 -> still in transit; misfit 706 (drift +34 vs noise 531, level), norm 11,093 of shell 12,810 (drift +678 vs noise 199, moving)
+[eq33 dt=0.0001 rr=5] max legs reached, still in transit at step 5,100,000

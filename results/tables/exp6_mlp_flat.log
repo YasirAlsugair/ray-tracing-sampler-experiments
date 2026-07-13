@@ -1,0 +1,2 @@
+Accepted: 97.325000%
+[mlp] 20000 trajectories (L=30, dt=3e-04, prior=flat) in 51.0 min, acc=0.97, saved /Users/yasiralsugair/UofT/empirical/results/tables/exp6_rt_chain_mlp_flat.npz

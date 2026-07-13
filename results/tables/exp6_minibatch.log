@@ -1,0 +1,7 @@
+[dt=0.00035 rr=5] 100,000 steps in 7.9 min -> misfit 7,025, ||theta||^2 44,292, saved exp6_mb_dt0.00035_rr5.npz
+[dt=0.00035 rr=50] 100,000 steps in 7.9 min -> misfit 1,063, ||theta||^2 34,739, saved exp6_mb_dt0.00035_rr50.npz
+[dt=0.0001 rr=5] 100,000 steps in 7.9 min -> misfit 2,736, ||theta||^2 41,537, saved exp6_mb_dt0.0001_rr5.npz
+[dt=0.0001 rr=50] 100,000 steps in 7.8 min -> misfit 896, ||theta||^2 16,199, saved exp6_mb_dt0.0001_rr50.npz
+[dt=3e-05 rr=5] 100,000 steps in 7.8 min -> misfit 834, ||theta||^2 32,936, saved exp6_mb_dt3e-05_rr5.npz
+[dt=3e-05 rr=50] 100,000 steps in 7.8 min -> misfit 1,339, ||theta||^2 5,808, saved exp6_mb_dt3e-05_rr50.npz
+sweep complete

@@ -1,0 +1,281 @@
+\documentclass[12pt]{article}
+\usepackage{fouriernc}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage[bookmarks=true,colorlinks=true,linkcolor=blue]{hyperref}
+\usepackage{listings}
+\usepackage{mdframed}
+\addtolength{\hoffset}{-1cm}
+\addtolength{\textwidth}{2cm}
+\addtolength{\voffset}{-1cm}
+\addtolength{\textheight}{2cm}
+\definecolor{lbcolor}{rgb}{0.92,0.92,0.92}
+\begin{document}
+\lstset{language=C}
+\vspace{-1ex}
+\noindent{}The Ray Tracing Sampler\\
+\noindent{}Most code: Copyright \textcopyright{}2024--2026 Peter Behroozi\\
+\noindent{}\texttt{PyTorch} version: Based on the Adam optimizer, Copyright \textcopyright{}2024 PyTorch Developers\\
+\noindent{}\texttt{JAX} version: Based on the \texttt{minimal-hmc} repository, Copyright \textcopyright{}2024 Martin Marek\\
+\noindent{}\texttt{xoshiro256**} RNG: based on work by David Blackman and Sebastiano Vigna\\
+\noindent{}License (\texttt{C} and \texttt{JAX} versions, including examples): Apache 2.0\\
+\noindent{}License (\texttt{PyTorch} version, including examples): PyTorch (modified BSD)\\
+\noindent{}License (Autocorrelation Time Estimator): GPLv3\\
+\noindent{}Science/Documentation Paper: \url{https://arxiv.org/abs/2510.25824}\\
+
+\tableofcontents
+\newcommand{\ttt}[1]{\texttt{#1}}
+\newcommand{\codestyle}{\small}
+\definecolor{varcolor}{rgb}{0.127,0.526,0.541}
+
+\lstset{
+	tabsize=4,
+	language=python,
+        basicstyle=\codestyle,
+        upquote=true,
+        columns=fixed,
+        extendedchars=true,
+        numberstyle=\ttfamily,
+        identifierstyle=\ttfamily,
+        keywordstyle={\ttfamily\color[rgb]{0,0,1}},
+        commentstyle={\ttfamily\color[rgb]{0.133,0.545,0.133}},
+        stringstyle={\ttfamily\color[rgb]{0.627,0.126,0.941}},
+}
+\lstset{emph={Sampler,QueueSample},emphstyle={\ttfamily\color[rgb]{0,0.7,0.233}}}
+\lstset{emph={[2]NULL,ANGULAR_METROPOLIS_SAMPLER,STANDARD_METROPOLIS_SAMPLER,ALEXANDER_SAMPLER,SEARCHLIGHT_SAMPLER,SAMPLER_INVALID_LN_PROB,SAMPLER_INVALID_CHI2},emphstyle={[2]\ttfamily\color[rgb]{0.627,0.126,0.941}}}
+\lstset{emph={[3]e,keys,params_init,scale_likelihood,x,v,x0,v0,grad,likelihood,gradient,itype,mcmc_type,random_state,n_steps, n_leapfrog_steps, device, samples_device, step_size, metro_check,key,log_prob_fn,loss_tolerance,sample_hmc,refresh_rate,model,walkers,stochastic_hmc,verbose,params,mode,q,dims,max_steps,stdout,DIMS,steps,metropolis_check,dim,stderr,chi2,T,step_scale,success_ratio,radial_scale,theta_scale,N,dt,theta_rotate,delta_prob,tmax_scale,tmax_scatter,vel_scale,tmax_scaling,dt,walker,step_completed,ln_prob,stddevs},emphstyle={[3]\ttfamily\color{varcolor}}}
+\lstset{emph={[4]FILE,int64_t,uint64_t},emphstyle={[4]\ttfamily\color[rgb]{0,0,1}}}
+
+\surroundwithmdframed[linewidth=0pt,backgroundcolor=lbcolor,innertopmargin=0pt,innerbottommargin=0pt,innerleftmargin=4pt,innerrightmargin=4pt]{lstlisting}
+
+\section{Overview}
+\label{overview}
+
+The ray tracing algorithm carries the most advantages relative to existing methods when stochastic gradients are used, for example when performing Bayesian sampling of neural networks.  These docs describe the \texttt{C}, \texttt{JAX}, and \texttt{PyTorch} reference implementations, which are intended to be transparent and correct, rather than maximally performant.  Each of these implementations also includes an HMC sampler implementation for ease of comparison.
+
+
+\section{PyTorch version}
+
+To install, run \texttt{pip install raytrace\_torch} or copy the \texttt{raytrace\_torch.py} file to your source directory.  The \texttt{PyTorch} implementation inherits from the \texttt{torch.optim} class, so for basic usage, you can just replace your normal call to create an optimizer with a call to the ray tracing package:
+\begin{lstlisting}
+from raytrace_torch import Raytracer
+
+#Initialize typically using a pre-optimized parameter set,
+# and sample according to a loss tolerance X and timestep Y
+optimizer = Raytracer(model.parameters(), loss_tolerance=X, dt=Y)
+\end{lstlisting}
+You can then perform your usual call to \lstinline{optimizer.step()}, and the model parameters will be sampled instead of optimized.
+
+Generally, you will want to initialize model parameters from a previously-optimized model (e.g., with Adam or similar), as ray tracing will not be as efficient at finding the model minimum as algorithms that are designed to minimize the loss as fast as possible.  You will also want to adapt the internal likelihood scaling and the timestep size to your problem.
+
+Sampling will not give as low loss values as optimization, by definition.  You can tune this difference by setting your desired value for the \lstinline{loss_tolerance} parameter.  Internally, this scales the loss function (see the ray tracing paper) assuming that the effective number of constrained dimensions of the network is the same as the network parameter count.  Since this is not always true, you may find that you need to increase the  \lstinline{loss_tolerance}  parameter, especially if the number of samples in your training set is less than the parameter count---but generally if your network is significantly more complex than the underlying function you are trying to fit.  As an alternative to the \lstinline{loss_tolerance} parameter, you can set the \lstinline{scale_likelihood} parameter, which scales the loss function directly.  A strong sign that you need to increase the \lstinline{loss_tolerance} parameter (or, equivalently, decrease the  \lstinline{scale_likelihood} parameter) is if your validation loss is larger than your training loss --- i.e., if overfitting is occurring.
+
+The choice of timestep size depends on the stochasticity of the gradient, with higher stochasticity (i.e., lower mini-batch sizes) needing lower timestep sizes.  The default timestep size (which is used if \lstinline{dt=0} or if \lstinline{dt} is not provided) is about $0.03/D^{0.5}$, where $D$ is the network parameter count.  Fortunately, it's relatively easy to tell if the timestep is too large or small.  If the loss is diverging (which usually occurs within a few dozen steps after starting the chain), try repeatedly lowering the timestep by an order of magnitude until it no longer diverges.  Then, increase the timestep size by factors of 2 until you reach divergence again, and use the largest timestep that does not result in divergence.  Readers of your results will appreciate if you check for convergence by using a smaller timestep as well (e.g., 1/5 the size) and confirming that the posteriors that you find are consistent.
+
+The list of optional parameters to the \lstinline{Raytracer} initialization is:
+\begin{itemize}
+\label{optional_parameters}
+\item \lstinline{loss_tolerance=float}: the acceptable additional loss above the level achieved by an optimizer.  As above, this value may need to be increased if your model is much more complex than the underlying data or if your training set is small.  You can alternately set the \lstinline{scale_likelihood=float} parameter to choose the likelihood scaling directly.  Note that, like other optimizers, this implementation assumes that the gradient is being taken of the loss function, instead of the likelihood function, and so the sign of the gradient is automatically inverted internally.
+\item \lstinline{dt=float}: the timestep size of leapfrog integration.  The corresponding step size is a factor $D^{0.5}$ larger than the timestep size, where $D$ is the number of trainable model parameters.
+\item \lstinline{refresh_rate=float}: the rate at which the ray tracing momentum is continuously refreshed.  The default is to refresh momentum after a travel time of 1.  Lower refresh rates result in less random-walk-like behavior at the cost of potentially slower mixing, and higher refresh rates have the opposite behavior.  A refresh rate of 1, for example, will refresh the momentum after a travel time of 1, whereas a refresh rate of 2 will refresh the momentum after a travel time of 0.5.
+\item \lstinline{stochastic_hmc=bool}: if set to 1, this results in HMC sampling instead of ray tracing.
+\item \lstinline{verbose=bool}: if set to 1, prints out the parameter and momentum norms at every optimization step.\end{itemize}
+
+There are also several helper functions to enable Metropolis tests and more rigorous sampling (all called as, e.g., \lstinline{optimizer.first_step()}):
+\begin{itemize}
+\item \lstinline{first_step()}: Call before the first call to \lstinline{step()} in the sampling trajectory so that the leapfrog integrator knows to perform the first half-step of integration.  (Only useful if a Metropolis test is being performed).
+\item \lstinline{final_step()}: Call before the last call to \lstinline{step()} in the sampling trajectory so that the leapfrog integrator knows to perform the final half-step of integration.  (Only useful if a Metropolis test is being performed).
+\item \lstinline{reverse_momentum()}: Call after a rejected Metropolis test if you are using continuous refresh rates, to ensure reversibility.  As the name describes, it will reverse the direction of propagation.
+\item \lstinline{scale_likelihood()}: Returns the likelihood scaling factor $S$.
+\item \lstinline{ln_luminosity()}: Returns the change in log luminosity since the last \lstinline{first_step()} call.  To perform a Metropolis test, this should be compared to the change in the scaled loss function.
+\end{itemize}
+
+You may also change parameters after the sampler is initialized (e.g., if you have started a run and realize that you need to change the timestep size, etc.).
+\begin{itemize}
+\item \lstinline{set_scale_likelihood(X)}: Change the likelihood scaling to \lstinline{X} (\lstinline{float}).
+\item \lstinline{set_dt(X)}: Change the timestep to \lstinline{X} (\lstinline{float}).
+\item \lstinline{set_refresh_rate(X)}: Change the refresh rate to \lstinline{X} (\lstinline{float}).
+\end{itemize}
+
+The \texttt{PyTorch} version also supports a \texttt{JAX}-like interface.  For example, 
+\begin{lstlisting}
+from raytrace_torch import sample_raytrace
+
+chain,likelihood = sample_raytrace(params_init=x0, \
+    log_prob_fn=lpf, n_steps=1000, n_leapfrog_steps=10, \
+    step_size=0.15, refresh_rate=0.0, metro_check=1, sample_hmc=False, \
+    device=None, samples_device=None, scale_likelihood=1.0)
+\end{lstlisting}
+The parameters are as follows:
+\begin{itemize}
+\item \lstinline{params_init}: a \texttt{PyTorch} tensor for the starting position.  The number of dimensions of the parameter space is inferred based on the number of elements in this tensor.
+\item \lstinline{log_prob_fn}: a function that returns the log-likelihood.  If you're used to calculating chi-squared values instead, the log-likelihood will be a factor of -1/2 times the chi-squared value.  If you are computing a neural network loss, see the tips above about scaling the loss appropriately (and note that the log-likelihood should be proportional to the negative loss, so lower losses correspond to higher likelihoods---this method does not invert the sign of the gradient like the \texttt{Optimizer} version above).  The likelihood may be stochastic (e.g., from a mini-batch of a neural network), but in this case, you may wish to disable Metropolis checks.
+\item \lstinline{n_steps}: the number of trajectories to integrate, i.e., the number of points in the returned chain.
+\item \lstinline{n_leapfrog_steps}: the number of integration steps per trajectory.
+\item \lstinline{step_size}: the timestep size.  The physical step size will be a factor $D^{0.5}$ larger, where $D$ is the parameter space dimensionality.
+\item \lstinline{refresh_rate=0}: (\textit{optional}) the rate at which the ray tracing momentum is continuously refreshed.  The default is no refresh.  Lower refresh rates result in less random-walk-like behavior at the cost of potentially slower mixing, and higher refresh rates have the opposite behavior.  A refresh rate of 1, for example, will refresh the momentum after a travel time of 1, whereas a refresh rate of 2 will refresh the momentum after a travel time of 0.5.
+\item \lstinline{metro_check=1}: (\textit{optional}) set to 1 (the default) to perform Metropolis checks and 0 to skip them.  
+\item \lstinline{sample_hmc=False}: (\textit{optional}) set to \lstinline{False} (the default) to perform ray tracing and \lstinline{True} to perform HMC sampling.  
+\item \lstinline{device=None}: (\textit{optional}) the device where parameters and gradients are stored.  By default, this is the same as the device where \lstinline{x0} is stored.
+\item \lstinline{samples_device=none}:   (\textit{optional}) the device where the chain samples are stored.  By default, this is the same as the device where \lstinline{x0} is stored.
+\item \lstinline{scale_likelihood=1.0}:   (\textit{optional}) the scaling applied to the likelihood function.
+\end{itemize}
+
+
+
+\section{JAX version}
+\label{s:jax}
+
+To install, run \texttt{pip install raytrace\_jax} or copy the \texttt{raytrace\_jax.py} file to your source directory.  It's easiest to consider an example, e.g., of sampling from a 10,000-dimensional Gaussian distribution:
+\begin{lstlisting}
+import jax
+from raytrace_jax import sample_raytrace
+
+def gaussian(params):
+    return jax.scipy.stats.norm.logpdf(params).sum()
+
+k,nk = jax.random.split(jax.random.PRNGKey(0), 2)
+x0 = jax.random.normal(nk, shape=[10000])
+chain,likelihood = sample_raytrace(key=k, params_init=x0, \
+    log_prob_fn=gaussian, n_steps=1000, n_leapfrog_steps=10, \
+    step_size=0.15, refresh_rate=0.0, metro_check=1, sample_hmc=False)
+\end{lstlisting}
+The parameters are as follows:
+\begin{itemize}
+\item \lstinline{key}: a \texttt{JAX} random key.
+\item \lstinline{params_init}: a \texttt{JAX} array for the starting position.  The number of dimensions of the parameter space is inferred based on the length of this array.
+\item \lstinline{log_prob_fn}: a function that returns the log-likelihood.  If you're used to calculating chi-squared values instead, the log-likelihood will be a factor of -1/2 times the chi-squared value.  If you are computing a neural network loss, see the tips in the ray tracing paper about scaling the loss appropriately.  The likelihood may be stochastic (e.g., from a mini-batch of a neural network), but in this case, you may wish to disable Metropolis checks.
+\item \lstinline{n_steps}: the number of trajectories to integrate, i.e., the number of points in the returned chain.
+\item \lstinline{n_leapfrog_steps}: the number of integration steps per trajectory.
+\item \lstinline{step_size}: the timestep size.  The physical step size will be a factor $D^{0.5}$ larger, where $D$ is the parameter space dimensionality.
+\item \lstinline{refresh_rate=0}: (\textit{optional}) the rate at which the ray tracing momentum is continuously refreshed.  The default is no refresh.  Lower refresh rates result in less random-walk-like behavior at the cost of potentially slower mixing, and higher refresh rates have the opposite behavior.  A refresh rate of 1, for example, will refresh the momentum after a travel time of 1, whereas a refresh rate of 2 will refresh the momentum after a travel time of 0.5.
+\item \lstinline{metro_check=1}: (\textit{optional}) set to 1 (the default) to perform Metropolis checks and 0 to skip them.  
+\item \lstinline{sample_hmc=False}: (\textit{optional}) set to \lstinline{False} (the default) to perform ray tracing and \lstinline{True} to perform HMC sampling.  
+\end{itemize}
+To perform HMC sampling, you may also import and call \lstinline{sample_hamiltonian()} instead of \lstinline{sample_raytrace()}; the function parameters are identical, except that the default value of \lstinline{sample_hmc} is \lstinline{True}.
+
+If you are using ray tracing to sample a neural network, you will want to initialize model parameters from a previously-optimized model (e.g., with Adam or similar), as ray tracing will not be as efficient at finding the model minimum as algorithms that are designed to minimize the loss as fast as possible.  You will also want to adapt the likelihood scaling and the timestep size to your problem, as below.
+
+Sampling will not give as low loss values as optimization, by definition.  You can tune this difference by defining an appropriate likelihood that is a scaled version of your loss function.  If $D$ is the number of dimensions, a reasonable starting scaling is $L(x) = f_\mathrm{loss}(x) * D/(2 f_\mathrm{tol})$, where $f_\mathrm{tol}$ is your desired loss tolerance.  This choice scales the loss function (see the ray tracing paper) assuming that the effective number of constrained dimensions of the network is the same as the network parameter count.  Since this is not always true, you may find that you need to decrease the scaling factor ($D/(2 f_\mathrm{tol})$), especially if the number of samples in your training set is less than the parameter count---but generally if your network is significantly more complex than the underlying function you are trying to fit.  A strong sign that you need to decrease the scaling factor is if your validation loss is larger than your training loss --- i.e., if overfitting is occurring.
+
+The choice of timestep size depends on the geometry of the likelihood function and the stochasticity of the gradient, with higher stochasticity (i.e., lower mini-batch sizes) needing lower timestep sizes.  For neural networks, a recommended starting timestep size is about $0.03/D^{0.5}$.  Fortunately, it's relatively easy to tell if the timestep is too large or small.  If the loss is diverging (which usually occurs within a few dozen steps after starting the chain), try repeatedly lowering the timestep by an order of magnitude until it no longer diverges.  Then, increase the timestep size by factors of 2 until you reach divergence again, and use the largest timestep that does not result in divergence.  Readers of your results will appreciate if you check for convergence by using a smaller timestep as well (e.g., 1/5 the size) and confirming that the posteriors that you find are consistent.
+
+\section{C version}
+
+\lstset{
+	tabsize=4,
+	language=C,
+        basicstyle=\codestyle,
+        upquote=true,
+        columns=fixed,
+        numberstyle=\ttfamily,
+        identifierstyle=\ttfamily,
+        keywordstyle={\ttfamily\color[rgb]{0,0,1}},
+        commentstyle={\ttfamily\color[rgb]{0.133,0.545,0.133}},
+        stringstyle={\ttfamily\color[rgb]{0.627,0.126,0.941}}}
+
+
+To install, copy the \texttt{raytrace.c} and \texttt{raytrace.h} files, and link to them when you compile.  The \texttt{C} interface defines a raytracer struct, which contains all the sampling parameters.  You should include the \texttt{raytrace.h} header file in all code that interfaces with the sampler.  To initialize a sampler, you should use the \lstinline{Init_Raytracer()} call:
+
+\begin{lstlisting}
+struct raytracer *Init_Raytracer(double *x, int64_t DIMS, 
+	int64_t trajectory_steps, double dt, double refresh_rate,
+	double (*likelihood)(double *, int64_t), 
+	void (*gradient)(double *, double *, int64_t),
+	int64_t metropolis_check, enum raytrace_integration_type itype,
+	enum raytrace_mcmc_type mcmc_type);
+\end{lstlisting}
+The parameters are as follows:
+\begin{itemize}
+\item \lstinline{double *x}: a pointer to an array of \lstinline{double}s that contain the initial starting location.
+\item \lstinline{int64_t DIMS}: the number of dimensions $D$ of the parameter space.
+\item \lstinline{int64_t trajectory_steps}: the number of integration steps per trajectory.
+\item \lstinline{double dt}: The timestep.  the actual step size will be a factor \texttt{DIMS}$^{0.5}$ larger.
+\item \lstinline{double refresh_rate}: the rate at which the ray tracing momentum is continuously refreshed.  A refresh rate of 1, for example, will refresh the momentum after a travel time of 1, whereas a refresh rate of 2 will refresh the momentum after a travel time of 0.5.  Lower refresh rates result in less random-walk-like behavior at the cost of potentially slower mixing, and higher refresh rates have the opposite behavior.
+\item \lstinline{double (*likelihood)(double *x, int64_t DIMS)}: a \href{https://en.wikipedia.org/wiki/Function_pointer}{pointer to a function} that accepts a location in parameter space (\lstinline{double *}) and the number of dimensions (\lstinline{int64_t}) of the parameter space, and returns a \lstinline{double} value for the log-likelihood.  If you're used to calculating chi-squared values instead, the log-likelihood will be a factor of -1/2 times the chi-squared value.  If you are computing a neural network loss, see the tips in the ray tracing paper about scaling the loss appropriately.
+\item \lstinline{void (*gradient)(double *x, double *grad, int64_t DIMS)}: a pointer to a function that accepts a location in parameter space (\lstinline{double *}), an array to store the gradient (\lstinline{double *}), and the number of dimensions (\lstinline{int64_t}) of the parameter space.  It should compute the gradient (stochastic gradients are OK), and store in the supplied gradient array.  If you have scaled the likelihood function above, be sure that the gradient corresponds to the scaled version instead of the unscaled version.
+\item \lstinline{int64_t metropolis_check}: set to 1 to perform Metropolis checks, and 0 to skip Metropolis checks.
+\item \lstinline{enum raytrace_integration_type itype}: the style of integration.  This can be Leapfrog-style (use \texttt{DKD} for drift-kick-drift, \texttt{KDK} for kick-drift-kick, or \texttt{RDKD} to randomly choose between the two at each step), Omelyan 2nd-order (\texttt{Omelyan}), Omelyan 4th-order (\texttt{Omelyan4th}), or Forest-Ruth/Yoshida 4th-order (\texttt{Yoshida}).
+\item \lstinline{enum raytrace_mcmc_type mcmc_type}: this can either be \texttt{Raytracing} for ray tracing or \texttt{HMC} for Hamiltonian Monte Carlo.
+\end{itemize}
+
+If you are running more than one sampler, you will also want to supply a non-default random state.  You can do this via a call to the \lstinline{Raytrace_Init_Random_State()} function:
+\begin{lstlisting}
+void Raytrace_Init_Random_State(struct raytracer *r, 
+	uint64_t *s, int64_t vals);
+\end{lstlisting}
+The parameters are as follows:
+\begin{itemize}
+\item \lstinline{struct raytracer *r}: a pointer to a raytracer initialized via \lstinline{Init_Raytracer()} as above.
+\item \lstinline{uint64_t *s}: an array of 64-bit unsigned integers that represent the state vector.  Internally, the code uses \texttt{xoshiro256**}, so 4 64-bit values are preferred, but the code can still make do with 1, 2, or 3 values.
+\item \lstinline{int64_t vals}: the number of supplied 64-bit state values.
+\end{itemize}
+You can then run the ray tracing (or HMC) trajectory:
+\begin{lstlisting}
+int64_t Raytrace(struct raytracer *r, double *likelihood);
+\end{lstlisting}
+This function integrates a single trajectory of the sampler, performs an optional Metropolis test, and returns the Metropolis result (1 for pass, 0 for fail).  The sampler's new position is stored in an array of doubles in \lstinline{r->x}.  If the \lstinline{likelihood} pointer is not \lstinline{NULL}, the likelihood of the current position is stored at the pointer location.
+
+
+All of the sampler parameters can be accessed and updated through the raytracer structure:
+\begin{lstlisting}
+struct raytracer {
+  double *x, *v, dt, refresh_rate;
+  double *x0, *v0, *grad;
+  int64_t DIMS, steps, metropolis_check;
+  double (*likelihood)(double *, int64_t);
+  void (*gradient)(double *, double *, int64_t);
+  enum raytrace_integration_type itype;
+  enum raytrace_mcmc_type mcmc_type;
+  struct xoshiro256ss_state random_state;
+};
+\end{lstlisting}
+Beyond the parameters already listed above in the initialization function, there are:
+\begin{itemize}
+\item \lstinline{double *v}: the current momentum vector.
+\item \lstinline{double *x0, *v0}: storage for original values of the position and momentum vectors.  These arrays may not be allocated unless Metropolis checks have been enabled and a call to \lstinline{Raytrace()} has been made.
+\item \lstinline{double *grad}: the last computed value of the gradient vector.
+\item \lstinline{struct xoshiro256ss_state random_state}: the internal random state vector.
+\end{itemize}
+
+To free the memory in the raytracer structure, you can use:
+\begin{lstlisting}
+void Free_Raytracer(struct raytracer **r);
+\end{lstlisting}
+To call this, note that you should use \lstinline{Free_Raytracer(&r)} for a \lstinline{struct raytracer *} object \lstinline{r}.   This is because this function will reset \lstinline{r} to a \lstinline{NULL} pointer so that further use of the structure after its memory is freed will immediately trigger a memory fault instead of leading to mysterious bugs.
+
+If you are using ray tracing to sample a neural network, you will want to initialize model parameters from a previously-optimized model (e.g., with Adam or similar), as ray tracing will not be as efficient at finding the model minimum as algorithms that are designed to minimize the loss as fast as possible.  You will also want to adapt the likelihood scaling and the timestep size to your problem, as below.
+
+Sampling will not give as low loss values as optimization, by definition.  You can tune this difference by defining an appropriate likelihood that is a scaled version of your loss function.  If $D$ is the number of dimensions, a reasonable starting scaling is $L(x) = f_\mathrm{loss}(x) * D/(2 f_\mathrm{tol})$, where $f_\mathrm{tol}$ is your desired loss tolerance.  This choice scales the loss function (see the ray tracing paper) assuming that the effective number of constrained dimensions of the network is the same as the network parameter count.  Since this is not always true, you may find that you need to decrease the scaling factor ($D/(2 f_\mathrm{tol})$), especially if the number of samples in your training set is less than the parameter count---but generally if your network is significantly more complex than the underlying function you are trying to fit.  A strong sign that you need to decrease the scaling factor is if your validation loss is larger than your training loss --- i.e., if overfitting is occurring.
+
+The choice of timestep size depends on the geometry of the likelihood function and the stochasticity of the gradient, with higher stochasticity (i.e., lower mini-batch sizes) needing lower timestep sizes.  For neural networks, a recommended starting timestep size is about $0.03/D^{0.5}$.  Fortunately, it's relatively easy to tell if the timestep is too large or small.  If the loss is diverging (which usually occurs within a few dozen steps after starting the chain), try repeatedly lowering the timestep by an order of magnitude until it no longer diverges.  Then, increase the timestep size by factors of 2 until you reach divergence again, and use the largest timestep that does not result in divergence.  Readers of your results will appreciate if you check for convergence by using a smaller timestep as well (e.g., 1/5 the size) and confirming that the posteriors that you find are consistent.
+
+\section{Examples}
+
+Examples for 10,000-dimensional Gaussian sampling for each implementation are in the \texttt{examples/} subdirectory, in the form of \texttt{Python} notebooks (for the \texttt{JAX} and \texttt{PyTorch}) versions, and a \texttt{Makefile} and source file for the \texttt{C} version.  The \texttt{PyTorch} version has an additional example to sample from the posterior distribution of a simple fully-connected neural network, taken from Section 3.2 of the ray tracing paper.
+
+\section{Autocorrelation Time Utility}
+
+If you don't already have a utility to estimate autocorrelation times, one is provided in the \texttt{util/} directory of the main source distribution (but not the \texttt{pip} packages, as this would complicate installation).  To compile, type \texttt{make}.  Usage is:
+\begin{lstlisting}
+./acor_estimate <mcmc_output> <ndims> <nwalkers>
+\end{lstlisting} 
+The input file (\texttt{mcmc\_output}) should have one sample per line, with \texttt{ndims} space-separated parameters followed by the log-likelihood (or the chi-squared value, if preferred).  If multiple walkers are used, walker outputs are expected to be interleaved as follows:
+\begin{lstlisting}
+param1 param2 ... paramN log-prob #Walker 1, Sample 1
+param1 param2 ... paramN log-prob #Walker 2, Sample 1
+...
+param1 param2 ... paramN log-prob #Walker W, Sample 1
+param1 param2 ... paramN log-prob #Walker 1, Sample 2
+param1 param2 ... paramN log-prob #Walker 2, Sample 2
+...
+param1 param2 ... paramN log-prob #Walker W, Sample 2
+...
+param1 param2 ... paramN log-prob #Walker 1, Sample K
+param1 param2 ... paramN log-prob #Walker 2, Sample K
+...
+param1 param2 ... paramN log-prob #Walker W, Sample K
+\end{lstlisting}
+The estimator calculates the autocorrelation times of the parameter values, the absolute values of the parameter values, and the log-likelihood values, and reports the maximum.  It uses the Sokal (1996) estimator for autocorrelation times, and prints a warning if any autocorrelation time (for any dimension) exceeds 20\% of the total chain length---this is usually a sign that the samples are unconverged.
+
+\end{document}

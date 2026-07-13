@@ -1,0 +1,12 @@
+[tune33 rr=5] dt=0.00035  Eq.33 acceptance=0.15
+[tune33 rr=5] dt=0.0002  Eq.33 acceptance=0.37
+[tune33 rr=5] dt=0.0001  Eq.33 acceptance=0.45
+[tune33 rr=5] dt=5e-05  Eq.33 acceptance=0.47
+[tune33 rr=5] chosen dt=0.0001 (acceptance stopped improving below +0.02)
+[tune33 rr=50] dt=0.00035  Eq.33 acceptance=0.15
+[tune33 rr=50] dt=0.0002  Eq.33 acceptance=0.39
+[tune33 rr=50] dt=0.0001  Eq.33 acceptance=0.44
+[tune33 rr=50] dt=5e-05  Eq.33 acceptance=0.47
+[tune33 rr=50] dt=3e-05  Eq.33 acceptance=0.43
+[tune33 rr=50] chosen dt=5e-05 (acceptance stopped improving below +0.02)
+sweep complete

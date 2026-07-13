@@ -1,0 +1,5 @@
+[eq33 dt=0.0001 rr=5] resuming at step 5,100,000 with stored sigma_sto=1,139; misfit 706 (drift +34 vs noise 531, level), norm 11,093 of shell 12,810 (drift +678 vs noise 199, moving)
+[dt=0.0001 rr=5] sigma_sto = 1,139 nats -> eq33 exponent 8.78e-04
+[dt=0.0001 rr=5] 250,000 steps in 28.8 min -> misfit 163, ||theta||^2 11,142, eq33 rejected 4654/8333 windows, saved exp6_mb33_cnn_dt0.0001_rr5_part22.npz
+[eq33 dt=0.0001 rr=5] step 5,350,000 -> still in transit; misfit 163 (drift -37 vs noise 520, level), norm 11,142 of shell 12,810 (drift +625 vs noise 185, moving)
+[dt=0.0001 rr=5] sigma_sto = 1,139 nats -> eq33 exponent 8.78e-04

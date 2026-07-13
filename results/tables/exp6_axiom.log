@@ -1,0 +1,34 @@
+[axiom:randominit] start: ln_post=-139,824, ||theta||^2=25
+Accepted: 0.000000%
+[axiom:randominit] pilot dt=1.0e-03 acc=0.00
+Accepted: 0.000000%
+[axiom:randominit] pilot dt=3.5e-04 acc=0.00
+Accepted: 0.000000%
+[axiom:randominit] pilot dt=1.0e-04 acc=0.00
+Accepted: 100.000000%
+[axiom:randominit] pilot dt=3.0e-05 acc=1.00
+[axiom:randominit] chosen dt=3.0e-05 (acc=1.00), launching 20000 trajectories at L=30
+Accepted: 96.805000%
+[mlp] 20000 trajectories (L=30, dt=3e-05, prior=gaussian) in 52.2 min, acc=0.97, saved /Users/yasiralsugair/UofT/empirical/results/tables/exp6_rt_chain_mlp_randominit.npz
+[axiom:priordraw] start: ln_post=-17,291,676, ||theta||^2=51,260
+Accepted: 0.000000%
+[axiom:priordraw] pilot dt=1.0e-03 acc=0.00
+Accepted: 0.000000%
+[axiom:priordraw] pilot dt=3.5e-04 acc=0.00
+Accepted: 0.000000%
+[axiom:priordraw] pilot dt=1.0e-04 acc=0.00
+Accepted: 0.000000%
+[axiom:priordraw] pilot dt=3.0e-05 acc=0.00
+Accepted: 0.000000%
+[axiom:priordraw] pilot dt=1.0e-05 acc=0.00
+Accepted: 0.000000%
+[axiom:priordraw] pilot dt=3.0e-06 acc=0.00
+Accepted: 45.000000%
+[axiom:priordraw] pilot dt=1.0e-06 acc=0.42
+Accepted: 35.000000%
+[axiom:priordraw] pilot dt=3.0e-07 acc=0.32
+Accepted: 40.000000%
+[axiom:priordraw] pilot dt=1.0e-07 acc=0.37
+[axiom:priordraw] chosen dt=1.0e-06 (acc=0.42), launching 20000 trajectories at L=30
+Accepted: 72.495000%
+[mlp] 20000 trajectories (L=30, dt=1e-06, prior=gaussian) in 52.2 min, acc=0.72, saved /Users/yasiralsugair/UofT/empirical/results/tables/exp6_rt_chain_mlp_priordraw.npz
