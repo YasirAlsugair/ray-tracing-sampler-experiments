@@ -3,7 +3,11 @@ __pycache__/
 *.pyc
 .DS_Store
 data/
-results/checkpoints/
+results/checkpoints/*
+!results/checkpoints/exp6_mlp.pt
+!results/checkpoints/exp6_cnn.pt
+!results/checkpoints/exp6_mlp_dropout.pt
+!results/checkpoints/exp6_cnn_dropout.pt
 shemagh/checkpoints/
 shemagh/runs/
 .git-upstream/
@@ -44,11 +48,11 @@ shemagh/figures/*
 !shemagh/figures/fig_real_*
 shemagh/tables/*
 !shemagh/tables/real_*
-# exp6 chain/sweep snapshots, 0.1-3.8 GB each; scripts reproduce them
+# exp6 full-sample chain files, 0.4-3.8 GB each: over GitHub's file limit;
+# the scripts reproduce them (run/axiom modes)
 results/tables/exp6_rt_chain_mlp*.npz
-results/tables/exp6_mb_dt*.npz
-results/tables/exp6_mb33_dt*.npz
-results/tables/exp6_mb19_dt*.npz
+# MLP eq33 continuation legs, 194 MB each: over GitHub's 100 MB file limit
+results/tables/exp6_mb33_dt*_part*.npz
 # earlier studies (ResNet-50 five-sampler comparison, Dal Shemagh), kept local only
 experiments/exp5*
 results/EXP5_RESNET50.md
@@ -56,6 +60,3 @@ results/figures/exp5*
 results/tables/exp5*
 shemagh/
 exp6_guide.md
-results/tables/exp6_mb33_cnn*.npz
-results/tables/exp6_mb19_cnn*.npz
-results/tables/exp6_mb_cnn*.npz
