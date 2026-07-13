@@ -22,7 +22,7 @@ cd experiments
 # Run 1: the exact CNN chain, the missing ground truth. Full-batch
 # gradients with the Metropolis test on, 20,000 trajectories at the tuned
 # settings (dt 1.5e-4, L = 30). Roughly overnight on an A100.
-nohup python exp6_sample_metropolis.py run cnn 1.5e-4 30 20000 \
+nohup python exp6_sample_metropolis.py runlegs cnn 1.5e-4 30 20000 2000 \
     > ../results/tables/exp6_rt_chain_cnn20k_runpod.log 2>&1 &
 echo "launched: exact CNN chain (log: exp6_rt_chain_cnn20k_runpod.log)"
 

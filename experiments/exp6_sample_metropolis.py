@@ -143,6 +143,58 @@ def run(name, dt, L, n_steps, prior="gaussian", theta0=None, tag=None):
           f"in {wall/60:.1f} min, acc={acceptance(lnp):.2f}, saved {out}", flush=True)
 
 
+def run_in_legs(name, dt, L, total, leg=2000, prior="gaussian"):
+    """Restart-proof exact chain: `total` trajectories in legs of `leg`, each
+    saved as <stem>_leg<k>.npz the moment it finishes. Resumes from existing
+    legs automatically (momenta are redrawn every trajectory, so chunking is
+    the same chain). When the total is reached, the legs are merged into the
+    standard <stem>.npz that the notebook loads."""
+    suffix = "" if prior == "gaussian" else f"_{prior}"
+    stem = f"exp6_rt_chain_{name}{suffix}"
+    legs = sorted(TAB.glob(f"{stem}_leg*.npz"),
+                  key=lambda p: int(p.stem.rsplit("leg", 1)[1]))
+    done = sum(int(np.load(f)["n_steps"]) for f in legs)
+
+    cls = {"mlp": base.MLP, "cnn": base.CNN}[name]
+    model = cls().to(DEV)
+    if legs:
+        theta0 = torch.tensor(np.load(legs[-1])["samples"][-1],
+                              dtype=torch.float32, device=DEV)
+        print(f"[{name}] resuming at trajectory {done:,} from {legs[-1].name}",
+              flush=True)
+    else:
+        theta0 = flat_point(name, model)
+    xs, ys = load_full_train()
+    log_prob = make_log_prob(model, xs, ys, prior=prior)
+
+    while done < total:
+        n_this_leg = min(leg, total - done)
+        t0 = time.time()
+        samples, lnp = sample_raytrace(
+            theta0, log_prob, n_steps=n_this_leg, n_leapfrog_steps=L,
+            step_size=dt, refresh_rate=0, device=DEV,
+            samples_device="cpu", scale_likelihood=1.0,
+        )
+        out = TAB / f"{stem}_leg{len(legs) + 1:03d}.npz"
+        np.savez(out, samples=samples.numpy().astype(np.float32),
+                 ln_post=lnp.numpy(), dt=dt, L=L, n_steps=n_this_leg,
+                 prior=prior)
+        legs.append(out)
+        done += n_this_leg
+        theta0 = samples[-1].to(DEV)
+        print(f"[{name}] {done:,}/{total:,} trajectories "
+              f"(leg in {(time.time() - t0) / 60:.1f} min, "
+              f"acc={acceptance(lnp.numpy()):.2f}, saved {out.name})",
+              flush=True)
+
+    all_samples = np.concatenate([np.load(f)["samples"] for f in legs])
+    all_lnp = np.concatenate([np.load(f)["ln_post"] for f in legs])
+    final = TAB / f"{stem}.npz"
+    np.savez(final, samples=all_samples, ln_post=all_lnp, dt=dt, L=L,
+             n_steps=total, wall_s=0.0, prior=prior)
+    print(f"[{name}] merged {len(legs)} legs into {final.name}", flush=True)
+
+
 def chain_files(name, prior="gaussian"):
     """The base chain file plus any continuation legs, in chain order."""
     suffix = "" if prior == "gaussian" else f"_{prior}"
@@ -318,6 +370,11 @@ if __name__ == "__main__":
         pilot()
     elif sys.argv[1] == "auto":
         auto()
+    elif sys.argv[1] == "runlegs":
+        run_in_legs(sys.argv[2], float(sys.argv[3]), int(sys.argv[4]),
+                    int(sys.argv[5]),
+                    leg=int(sys.argv[6]) if len(sys.argv) > 6 else 2000,
+                    prior=sys.argv[7] if len(sys.argv) > 7 else "gaussian")
     elif sys.argv[1] == "axiom":
         axiom(n_steps=int(sys.argv[2]) if len(sys.argv) > 2 else 20000)
     elif sys.argv[1] == "converge":
