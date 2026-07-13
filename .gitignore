@@ -60,3 +60,5 @@ results/figures/exp5*
 results/tables/exp5*
 shemagh/
 exp6_guide.md
+results/tables/exp6_rt_chain_cnn.npz
+results/tables/backup_*

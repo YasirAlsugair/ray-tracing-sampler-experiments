@@ -75,5 +75,9 @@ The CNN Eq. 33 chain needs no state file: its legs are all committed, and
 `exp6_minibatch.py` resumes it from the last leg automatically.
 
 Datasets, checkpoints, and the large chain and sweep snapshot files
-(`exp6_rt_chain_mlp*.npz`, `exp6_mb*_dt*.npz`, 0.1 to 3.8 GB each) are not committed;
-the notebook's executed outputs carry the numbers, and the scripts reproduce the files.
+(`exp6_rt_chain_mlp*.npz`, the 20,000-trajectory `exp6_rt_chain_cnn.npz`,
+`exp6_mb*_dt*.npz`, 0.1 to 3.8 GB each) are not committed; the notebook's executed
+outputs carry the numbers, and the scripts reproduce the files. The earlier
+600-trajectory CNN chain is still in git history, and `exp6_last_state_cnn.npz`
+continues the 20,000-trajectory rerun (produced on a rented GPU via the script's
+`runlegs` mode).
