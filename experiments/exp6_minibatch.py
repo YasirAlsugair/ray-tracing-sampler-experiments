@@ -86,7 +86,7 @@ ARCH_CLASSES = {"mlp": None, "cnn": None}  # filled after base import below
 def model_for(arch):
     cls = {"mlp": base.MLP, "cnn": base.CNN}[arch]
     model = cls().to(DEV)
-    model.load_state_dict(torch.load(base.CKPT / f"exp6_{arch}.pt"))
+    model.load_state_dict(torch.load(base.CKPT / f"exp6_{arch}.pt", map_location=DEV))
     return model
 
 

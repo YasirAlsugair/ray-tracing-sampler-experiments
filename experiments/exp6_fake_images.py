@@ -121,7 +121,7 @@ def main():
 
     print("building the four methods...", flush=True)
     point = base.MLP().to(DEV)
-    point.load_state_dict(torch.load(base.CKPT / "exp6_mlp.pt"))
+    point.load_state_dict(torch.load(base.CKPT / "exp6_mlp.pt", map_location=DEV))
 
     members = []
     for seed in range(ensemble_script.M):
@@ -141,7 +141,7 @@ def main():
         print(f"  ensemble member {seed} retrained", flush=True)
 
     dropout_model = MLPWithDropout().to(DEV)
-    dropout_model.load_state_dict(torch.load(base.CKPT / "exp6_mlp_dropout.pt"))
+    dropout_model.load_state_dict(torch.load(base.CKPT / "exp6_mlp_dropout.pt", map_location=DEV))
     chain_vectors = chain_member_vectors()
     chain_model = base.MLP().to(DEV)
 

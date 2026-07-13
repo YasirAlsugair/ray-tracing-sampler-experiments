@@ -74,7 +74,7 @@ def make_log_prob(model, xs, ys, prior="gaussian"):
 
 
 def flat_point(name, model):
-    model.load_state_dict(torch.load(base.CKPT / f"exp6_{name}.pt"))
+    model.load_state_dict(torch.load(base.CKPT / f"exp6_{name}.pt", map_location=DEV))
     return torch.cat([p.detach().flatten() for p in model.parameters()]).to(DEV)
 
 

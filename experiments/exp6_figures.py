@@ -56,7 +56,7 @@ def fig1_march():
     n = len(lnp)
 
     model = base.MLP().to(DEV)
-    model.load_state_dict(torch.load(base.CKPT / "exp6_mlp.pt"))
+    model.load_state_dict(torch.load(base.CKPT / "exp6_mlp.pt", map_location=base.DEV))
     specs = [(nm, p.shape, p.numel()) for nm, p in model.named_parameters()]
     tr_loader, _, _ = base.loaders()
     xs, ys = [], []
