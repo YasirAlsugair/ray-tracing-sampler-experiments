@@ -1,0 +1,38 @@
+/workspace/ray-tracing-sampler-experiments/experiments/mapstart_driver.py:26: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.detach().clone() or sourceTensor.detach().clone().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  labels = torch.tensor(train.targets).to(ps.DEV)
+[map] epoch 5: misfit    179,383  norm^2     50,116
+[map] epoch 10: misfit     58,740  norm^2     49,401
+[map] epoch 15: misfit     28,430  norm^2     48,037
+[map] epoch 20: misfit     17,771  norm^2     45,453
+[map] epoch 30: misfit     10,407  norm^2     36,347
+[map] epoch 50: misfit      5,075  norm^2     21,293
+
+[chain from epoch 10] launching 2,000 trajectories (dt 3.5e-4, L=30)
+Accepted: 91.600000%
+[mlp] 2000 trajectories (L=30, dt=3e-04, prior=gaussian) in 2.9 min, acc=0.92, saved /workspace/ray-tracing-sampler-experiments/results/tables/exp6_rt_chain_mlp_mapstart_ep10.npz
+[chain from epoch 10] done in 3.0 min
+
+[chain from epoch 15] launching 2,000 trajectories (dt 3.5e-4, L=30)
+Accepted: 95.850000%
+[mlp] 2000 trajectories (L=30, dt=3e-04, prior=gaussian) in 2.9 min, acc=0.96, saved /workspace/ray-tracing-sampler-experiments/results/tables/exp6_rt_chain_mlp_mapstart_ep15.npz
+[chain from epoch 15] done in 3.1 min
+
+[chain from epoch 20] launching 2,000 trajectories (dt 3.5e-4, L=30)
+Accepted: 93.450000%
+[mlp] 2000 trajectories (L=30, dt=3e-04, prior=gaussian) in 3.0 min, acc=0.93, saved /workspace/ray-tracing-sampler-experiments/results/tables/exp6_rt_chain_mlp_mapstart_ep20.npz
+[chain from epoch 20] done in 3.2 min
+
+[chain from epoch 50] launching 2,000 trajectories (dt 3.5e-4, L=30)
+Accepted: 96.950000%
+[mlp] 2000 trajectories (L=30, dt=3e-04, prior=gaussian) in 2.9 min, acc=0.97, saved /workspace/ray-tracing-sampler-experiments/results/tables/exp6_rt_chain_mlp_mapstart_ep50.npz
+[chain from epoch 50] done in 3.0 min
+
+summary (misfit = -ln_post - norm^2/2):
+       start   misfit_0   norm2_0  misfit_end  norm2_end
+    epoch 10     58,740    49,401       7,537     49,203
+    epoch 15     27,668    48,027       7,363     48,407
+    epoch 20     17,771    45,453       7,269     46,264
+    epoch 50      4,985    21,295       4,118     26,858
+
+reference: typical set misfit ~350, norm^2 ~49,600; Adam start reached misfit 158, norm^2 45,134 after 20,000 trajectories
+MAPSTART-DRIVER-COMPLETE
