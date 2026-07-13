@@ -59,6 +59,15 @@ python3.12 -m venv .venv
 The notebook loads saved artifacts from `results/tables/` when present and recomputes
 anything missing (set `RECOMPUTE = True` to force). MNIST downloads automatically.
 
+To continue a chain rather than restart it: the `results/tables/exp6_last_state_*.npz`
+files hold each big chain's final parameter vector plus its settings (the full sample
+files exceed GitHub's size limit). Load `theta` and pass it to `run(..., theta0=...)`
+in `exp6_sample_metropolis.py` (exact chains) or `run_arm(..., initial_state=...)` in
+`exp6_minibatch.py` (minibatch chains; reuse the stored `sigma_sto` for the same
+Eq. 33 gate). Momenta are redrawn every trajectory, so this continues the same chain.
+The CNN Eq. 33 chain needs no state file: its legs are all committed, and
+`exp6_minibatch.py` resumes it from the last leg automatically.
+
 Datasets, checkpoints, and the large chain and sweep snapshot files
 (`exp6_rt_chain_mlp*.npz`, `exp6_mb*_dt*.npz`, 0.1 to 3.8 GB each) are not committed;
 the notebook's executed outputs carry the numbers, and the scripts reproduce the files.
