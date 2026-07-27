@@ -64,3 +64,4 @@ results/tables/exp6_rt_chain_cnn.npz
 results/tables/backup_*
 exp6_screenshare.html
 exp6_meeting_deck.*
+results/tables/exp7*.npz
