@@ -25,13 +25,16 @@ experiments/exp7_gaia_driver.py.
 
     RMSE   global mean            0.0927
     RMSE   kNN (k=10)             0.0742
-    RMSE   N(0,1) chain           0.0704   (500k steps, same budget as Glorot)
-    RMSE   Glorot gated dt 5e-6   0.0492   (2M steps, acceptance 0.38)
-    RMSE   Glorot ungated dt 1e-4 0.0486   (the reference chain)
-    z std: ungated 4.4, gated 6.2, N(0,1) 7.8   (1.0 = calibrated)
-    member spread (median): ungated 0.0080, gated 0.0020, vs label err 0.0064
+    RMSE   N(0,1) chain           0.0704   (500k steps, prior ablation)
+    RMSE   THE CHAIN (gated 5e-6) 0.0492   (2M steps, Eq. 33 on, acc 0.38)
+    z std: chain 6.2 (spread is a lower bound), N(0,1) 7.8  (1.0 = calibrated)
+    member spread (median): chain 0.0020 (lower bound), vs label err 0.0064
 
-The chain beats k-NN by a third. The uncertainties are 4 to 6x too small:
+Validation: an unadjusted control arm (dt 1e-4, 500k steps, local file
+exp7_rtub_dt0.0001.npz, not in the analysis pack) reproduces the chain's
+predictions to one percent (RMSE 0.0486) with ~4x larger member spreads
+(z std 4.4), so the gate changed the cost, not the answer. The chain
+beats k-NN by a third. The uncertainties are at least 4x too small:
 residuals ~0.049 vs claimed ~0.010. An intrinsic scatter s ~ 0.05 dex
 (workbook section 2, choice 2) is the obvious next run.
 
@@ -60,9 +63,12 @@ residuals ~0.049 vs claimed ~0.010. An intrinsic scatter s ~ 0.05 dex
    mechanism. Never read a drift rule without acceptance next to it: a
    frozen all-reject chain passes any stationarity test.
 
-3. Practical mode = knob-controlled unadjusted (exp6's conclusion): the
-   ungated dt 1e-4 arm is the reference chain, misfit still drifting
-   slowly at the end, so posterior spreads are provisional.
+3. The chain of record keeps the gate (per Yasir's call): its decisions
+   at the tuned dt are noise, but the agreement with the unadjusted
+   control (0.0492 vs 0.0486) is itself evidence the knob-controlled
+   dynamics were clean. The cost is a 20x smaller step, so the member
+   spread is a lower bound; the misfit was also still drifting slowly at
+   the end, so posterior spreads are provisional twice over.
 
 4. GaiaXpy: coefficients are stored BP-first (swapped halves produce a
    seam at 640 nm). At fixed Teff and [M/H], high-alpha giants are 20-30

@@ -24,9 +24,8 @@ sp = np.load(TAB / "exp7_gaia_spectra_payload.npz")
 X = torch.tensor(d["test_Xs"], device=DEV)
 
 CHAINS = {
-    "ungated": [TAB / "exp7_rtub_dt0.0001.npz"],
-    "gated5e6": [TAB / "exp7_rt33_dt5e-06.npz"],
-    "normal": [TAB / "exp7n_rt33_dt0.0001.npz"],
+    "gated5e6": [TAB / "exp7_rt33_dt5e-06.npz"],   # the chain of record
+    "normal": [TAB / "exp7n_rt33_dt0.0001.npz"],   # N(0,1) prior ablation
 }
 
 
@@ -64,9 +63,9 @@ for name, files in CHAINS.items():
     print(f"{name}: member_preds {out[f'member_preds_{name}'].shape}")
 
 # member-mean d(prediction)/d(standardized coefficient), per test star,
-# from the reference (ungated) chain
+# from the chain of record
 grad_sum = torch.zeros_like(X)
-for s in members(CHAINS["ungated"][0:1]):
+for s in members(CHAINS["gated5e6"]):
     load_flat(model, s)
     x = X.clone().requires_grad_(True)
     model(x).squeeze(-1).sum().backward()
@@ -83,7 +82,9 @@ np.savez_compressed(
     teff=sp["teff"], mh=sp["mh"], sids=sp["sids"],
     split_seed=2003,
     note="members = 50 evenly thinned over each chain's final quarter; "
-         "grad in standardized coords, divide by norm_sd for raw; "
-         "spectra coefficients live in exp7_gaia_spectra_payload.npz")
+         "gated5e6 is the chain of record (Eq. 33 gate on; its member "
+         "spread is a LOWER BOUND, the gate slows mixing); normal is the "
+         "N(0,1) prior ablation; grad in standardized coords, divide by "
+         "norm_sd for raw; spectra live in exp7_gaia_spectra_payload.npz")
 size = (TAB / "exp7_analysis_pack.npz").stat().st_size / 1e6
 print(f"pack written: {size:.1f} MB")
