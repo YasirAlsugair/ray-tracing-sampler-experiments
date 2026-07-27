@@ -65,3 +65,5 @@ results/tables/backup_*
 exp6_screenshare.html
 exp6_meeting_deck.*
 results/tables/exp7*.npz
+!results/tables/exp7_analysis_pack.npz
+!results/tables/exp7_gaia_spectra_payload.npz
