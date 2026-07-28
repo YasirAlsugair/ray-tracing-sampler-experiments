@@ -125,9 +125,37 @@ campaign, 2M steps in 7.7 h on a slow-CPU host. THE CHAIN OF RECORD is
 now this one. Chain file: results/tables/exp7s_rt33_dt2e-05.npz
 (gitignored like the others).
 
+## The exact full-batch finisher (2026-07-28, same pod)
+
+A noiseless finisher launched from the converged endpoint: full-batch
+gradients, exact Metropolis test every trajectory, no Eq. 33
+approximation. Pilot found a cliff, not a slope: every dt from 2e-4 down
+to 5e-6 rejects at 0.00, and 2e-6 accepts at 1.00, so the exact test
+forces a step 10x smaller than the minibatch production step. Production:
+5,000 trajectories, L = 30, 14.9 minutes, acceptance 0.98.
+
+    RMSE 0.0469 (record: 0.0466)   z std 1.055   s median 0.0436
+
+The verdict has two parts. First, the full-batch posterior ACCEPTS the
+minibatch chain's endpoint at 0.98 and reproduces its predictions, so
+the converged state is not a minibatch artifact. Second, the stamp is on
+the location, not the spread: each trajectory covers a path of only
+6e-5, the exact chain barely moves (member spread median 0.0007, s
+spread 0.0000, both lower bounds by construction), and ln_post was still
+climbing at the end (160,871 to 165,061, drift +58 vs noise 17). Spreads
+still come from the chain of record (tau 0.012). Exactness at D = 11,330
+cost a 10x smaller step, which is the scaling argument for minibatch
+gates at scale, now measured on our own target. Chain file:
+results/tables/exp7s_exact_dt2e-06.npz (gitignored).
+
 ## Open items
 
 - Intrinsic scatter s as an 11,330th parameter, then recheck z std.
-- Longer ungated run (or exact-chain finisher) before quoting spreads.
+  DONE: the scatter run above; z std 0.948.
+- Exact-chain finisher. DONE: stamps the location (acc 0.98, RMSE
+  reproduced); spreads still quoted from the chain of record.
 - Early NaNs in the window ledger at the saturated start (auto-accepted by
   an already-blind gate); harmless here, worth a guard.
+- Heavy-tailed likelihood for the |z| > 4 tail stars (they own sigma_sto);
+  a modeling decision for Yasir and Josh, out of scope for the reference
+  run.
