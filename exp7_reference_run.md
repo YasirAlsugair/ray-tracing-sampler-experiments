@@ -90,8 +90,14 @@ residuals ~0.049 vs claimed ~0.010. An intrinsic scatter s ~ 0.05 dex
 ## The intrinsic-scatter run (2026-07-27 evening, pod exp7-scatter)
 
 The corrected noise model, var_i = err_i^2 + s^2 with ln s = -3 + u
-sampled (u ~ N(0,1) prior, s starts at 0.0498), D = 11,330, continued from
-the gated chain's endpoint. Driver: experiments/exp7_gaia_scatter.py.
+sampled (u ~ N(0,1) prior, s starts at 0.0498), D = 11,330. Intended to continue
+from the gated chain's endpoint; a parameter-ordering bug (u registers
+BEFORE the network weights in the scatter model, caught post hoc when the
+exact finisher rejected everything at -3.3M nats) scrambled the warm start
+into a same-scale shuffle. The chain repaired it within 100k steps, an
+accidental robustness test, and the converged endpoint is unaffected: the
+run's own save/load are self-consistent. Driver:
+experiments/exp7_gaia_scatter.py (log_prob layout fixed in the same file).
 Tuned on the corrected target from the seed state:
 
     acceptance ladder  dt 1e-4: 0.83   5e-5: 0.90   2e-5: 0.94   1e-5: 0.92

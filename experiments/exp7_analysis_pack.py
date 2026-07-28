@@ -60,9 +60,9 @@ for name, files in CHAINS.items():
     preds, s_vals = [], []
     with torch.no_grad():
         for st in members(files):
-            if len(st) == D_net + 1:            # scatter chain carries u last
-                s_vals.append(math.exp(LNS0 + float(st[-1])))
-                st = st[:-1]
+            if len(st) == D_net + 1:            # scatter chain: u is FIRST
+                s_vals.append(math.exp(LNS0 + float(st[0])))
+                st = st[1:]
             load_flat(model, st)
             preds.append(model(X).squeeze(-1).cpu().numpy())
     out[f"member_preds_{name}"] = np.stack(preds).astype(np.float32)
@@ -75,7 +75,7 @@ for name, files in CHAINS.items():
 # from the chain of record
 grad_sum = torch.zeros_like(X)
 for st in members(CHAINS["scatter"]):
-    load_flat(model, st[:-1])
+    load_flat(model, st[1:])
     x = X.clone().requires_grad_(True)
     model(x).squeeze(-1).sum().backward()
     grad_sum += x.grad

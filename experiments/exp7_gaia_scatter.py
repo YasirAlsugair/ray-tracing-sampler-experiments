@@ -293,11 +293,12 @@ def make_log_prob_full(Xs, y, yerr):
                               [p.numel() for p in model.parameters()])])
 
     def log_prob(theta):
-        out, i = {}, 0
+        # ScatterModel registers u FIRST: layout is [u, net weights]
+        out, i = {}, 1
         for n, sh, sz in specs:
             out[n] = theta[i:i + sz].view(sh)
             i += sz
-        u = theta[-1]
+        u = theta[0]
         mu = functional_call(model.net, out, (Xs,)).squeeze(-1)
         var = yerr ** 2 + torch.exp(2 * (LNS0 + u))
         nll = (((y - mu) ** 2 / (2 * var))
