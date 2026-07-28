@@ -24,9 +24,11 @@ sp = np.load(TAB / "exp7_gaia_spectra_payload.npz")
 X = torch.tensor(d["test_Xs"], device=DEV)
 
 CHAINS = {
-    "gated5e6": [TAB / "exp7_rt33_dt5e-06.npz"],   # the chain of record
+    "scatter": [TAB / "exp7s_rt33_dt2e-05.npz"],   # THE CHAIN OF RECORD
+    "gated5e6": [TAB / "exp7_rt33_dt5e-06.npz"],   # previous record
     "normal": [TAB / "exp7n_rt33_dt0.0001.npz"],   # N(0,1) prior ablation
 }
+LNS0 = -3.0  # scatter chain: ln s = LNS0 + u, u is the final parameter
 
 
 def make_model():
@@ -53,20 +55,27 @@ def load_flat(model, flat):
 
 model = make_model()
 out = {}
+D_net = sum(p.numel() for p in model.parameters())
 for name, files in CHAINS.items():
-    preds = []
+    preds, s_vals = [], []
     with torch.no_grad():
-        for s in members(files):
-            load_flat(model, s)
+        for st in members(files):
+            if len(st) == D_net + 1:            # scatter chain carries u last
+                s_vals.append(math.exp(LNS0 + float(st[-1])))
+                st = st[:-1]
+            load_flat(model, st)
             preds.append(model(X).squeeze(-1).cpu().numpy())
     out[f"member_preds_{name}"] = np.stack(preds).astype(np.float32)
-    print(f"{name}: member_preds {out[f'member_preds_{name}'].shape}")
+    if s_vals:
+        out[f"member_s_{name}"] = np.array(s_vals, dtype=np.float32)
+    print(f"{name}: member_preds {out[f'member_preds_{name}'].shape}"
+          + (f", s median {np.median(s_vals):.4f}" if s_vals else ""))
 
 # member-mean d(prediction)/d(standardized coefficient), per test star,
 # from the chain of record
 grad_sum = torch.zeros_like(X)
-for s in members(CHAINS["gated5e6"]):
-    load_flat(model, s)
+for st in members(CHAINS["scatter"]):
+    load_flat(model, st[:-1])
     x = X.clone().requires_grad_(True)
     model(x).squeeze(-1).sum().backward()
     grad_sum += x.grad
@@ -82,9 +91,11 @@ np.savez_compressed(
     teff=sp["teff"], mh=sp["mh"], sids=sp["sids"],
     split_seed=2003,
     note="members = 50 evenly thinned over each chain's final quarter; "
-         "gated5e6 is the chain of record (Eq. 33 gate on; its member "
-         "spread is a LOWER BOUND, the gate slows mixing); normal is the "
-         "N(0,1) prior ablation; grad in standardized coords, divide by "
-         "norm_sd for raw; spectra live in exp7_gaia_spectra_payload.npz")
+         "scatter is THE CHAIN OF RECORD (corrected noise model, converged "
+         "on all drift checks, z std 0.95; member_s_scatter carries each "
+         "member's intrinsic scatter s); gated5e6 is the previous record "
+         "(collapsed spread), normal the N(0,1) ablation; grad in "
+         "standardized coords, divide by norm_sd for raw; spectra live in "
+         "exp7_gaia_spectra_payload.npz")
 size = (TAB / "exp7_analysis_pack.npz").stat().st_size / 1e6
 print(f"pack written: {size:.1f} MB")

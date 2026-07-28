@@ -87,6 +87,38 @@ residuals ~0.049 vs claimed ~0.010. An intrinsic scatter s ~ 0.05 dex
     results/tables/exp7n_rt33_dt0.0001.npz        N(0,1) chain, 500k
     results/tables/exp7_gaia_spectra_payload.npz  test-split coeffs for GaiaXpy
 
+## The intrinsic-scatter run (2026-07-27 evening, pod exp7-scatter)
+
+The corrected noise model, var_i = err_i^2 + s^2 with ln s = -3 + u
+sampled (u ~ N(0,1) prior, s starts at 0.0498), D = 11,330, continued from
+the gated chain's endpoint. Driver: experiments/exp7_gaia_scatter.py.
+Tuned on the corrected target from the seed state:
+
+    acceptance ladder  dt 1e-4: 0.83   5e-5: 0.90   2e-5: 0.94   1e-5: 0.92
+    chosen dt 2e-5 (4x the old step), production 2M steps, Eq. 33 on
+
+Three predictions were registered before the run; the scoreboard:
+
+    sigma_sto collapses      REFUTED   162k nats (tail stars own the batch
+                                       noise; heavy-tailed likelihood is the
+                                       eventual fix)
+    s lands near 0.049       NEAR HIT  s = 0.0452 +- 0.0010; the shift is
+                                       explained: s equalizes star weights,
+                                       the fit improved, residuals shrank
+    z std lands near 1       HIT       z std 0.948, calibrated
+
+And the run delivered more than predicted. RMSE 0.0466, the campaign
+best (equal weighting freed the fit from the tiny-error stars). The
+weighted norm fell back from 24.4k to 15.0k against the shell's 11.3k:
+the corrected likelihood no longer demands oversized weights. Member
+spread recovered to 0.0120 (real mixing at the 4x step). Acceptance held
+at 0.99 with the gate on throughout. And ALL THREE drift checks pass
+(misfit +90 vs noise 2517, wnorm -13 vs 304, s +7e-5 vs 1e-3) with
+healthy acceptance: the first legitimately converged chain of the
+campaign, 2M steps in 7.7 h on a slow-CPU host. THE CHAIN OF RECORD is
+now this one. Chain file: results/tables/exp7s_rt33_dt2e-05.npz
+(gitignored like the others).
+
 ## Open items
 
 - Intrinsic scatter s as an 11,330th parameter, then recheck z std.

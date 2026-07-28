@@ -8,9 +8,12 @@ two small files that are.
 
 ## Files
 
-`results/tables/exp7_analysis_pack.npz` (20 MB), one array per line:
+`results/tables/exp7_analysis_pack.npz` (24 MB), one array per line:
 
-    member_preds_gated5e6  (50, 25232)  THE CHAIN: gated dt 5e-6, Eq. 33 on
+    member_preds_scatter   (50, 25232)  THE CHAIN: corrected noise model,
+                                        converged (all drift checks, acc 0.99)
+    member_s_scatter       (50,)        each member's intrinsic scatter s
+    member_preds_gated5e6  (50, 25232)  previous record (collapsed spread)
     member_preds_normal    (50, 25232)  N(0,1)-prior ablation (comparison only)
     grad_mean_std_coords   (25232, 110) member-mean d(pred)/d(std. coefficient)
     norm_mu, norm_sd       (110,)       the standardization vectors
@@ -22,30 +25,32 @@ two small files that are.
 
 Members are 50 evenly thinned states from the chain's final quarter. The
 predictive for star i: mean over members = mu_i, spread over members =
-tau_i, total claimed variance = tau_i^2 + test_yerr_i^2. One property of
-the chain of record to carry into every caption: the Eq. 33 gate ran at
-its noise ceiling, which slows mixing, so tau is a LOWER BOUND on the
-posterior spread (an unadjusted control arm, not shipped here, gives
-spreads about 4x larger with the same predictions).
+tau_i, and the total claimed variance now includes the sampled intrinsic
+scatter: tau_i^2 + test_yerr_i^2 + s^2. The chain of record converged
+(misfit, weighted norm, and s all pass the drift rule at acceptance
+0.99), its spread is genuine (median tau 0.012), and its overall
+calibration is healthy: z std 0.948.
 
 ```python
 import numpy as np
 p = np.load("results/tables/exp7_analysis_pack.npz")
-mu = p["member_preds_gated5e6"].mean(axis=0)
-tau = p["member_preds_gated5e6"].std(axis=0)
-z = (p["test_y"] - mu) / np.sqrt(tau**2 + p["test_yerr"]**2)
+mu = p["member_preds_scatter"].mean(axis=0)
+tau = p["member_preds_scatter"].std(axis=0)
+s_med = np.median(p["member_s_scatter"])
+z = (p["test_y"] - mu) / np.sqrt(tau**2 + p["test_yerr"]**2 + s_med**2)
 ```
 
 ## Task 1: calibration anatomy
 
-Known: z has std about 6 overall (should be 1; about 4.4 even under the
-control arm's larger spreads, so the miscalibration is real, not a
-thinning artifact). Unknown: where the excess lives. Bin z by Teff,
-[M/H], label error, and |alpha| itself; plot z std per bin. The question
-to answer in one paragraph: is the miscalibration flat (one global
-intrinsic scatter s, with sigma_i^2 = err_i^2 + s^2, fixes it; estimate s
-from the residuals) or structured (s must depend on stellar parameters,
-which changes the next sampling run).
+Update: the global problem is solved. The corrected chain calibrates at
+z std 0.948 with a single sampled s = 0.045. The question is now finer
+and more interesting: is that health uniform? Bin z std by Teff, [M/H],
+label error, and |alpha|; a flat 1.0 across all bins means one global s
+truly suffices, structure means s wants to be a function of stellar
+parameters. Second question, the tails: the stars beyond |z| of 4 (the
+half-dex misses that dominate sigma_sto) are the case file for a
+Student-t likelihood; count them, locate them in the HR diagram, and
+check overlap with the star-card gallery's worst misses.
 
 ## Task 2: star-card gallery
 
@@ -77,9 +82,10 @@ moves or scales with metallicity.
 
 ## Caveats that must survive into any figure
 
-The chain of record is `member_preds_gated5e6`, Metropolis-checked
-throughout; its tau is a lower bound (see above), and the chain's misfit
-was still drifting slowly at the end of the runs, so all spreads are
-provisional; say so in captions. The N(0,1) chain is a prior ablation,
-not a competitor. Changes to the sampler or the target definition are out
-of scope here and go through Yasir and Josh.
+The chain of record is `member_preds_scatter`, Metropolis-checked
+throughout, converged on all three drift checks with acceptance 0.99, and
+globally calibrated; its spreads can be quoted without the old
+lower-bound caveat. The gated5e6 arrays are the previous record (spread
+collapsed by the gate, keep for comparison only), and the N(0,1) chain is
+a prior ablation, not a competitor. Changes to the sampler or the target
+definition remain out of scope here and go through Yasir and Josh.
