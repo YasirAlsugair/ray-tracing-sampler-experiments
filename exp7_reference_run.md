@@ -103,15 +103,33 @@ Tuned on the corrected target from the seed state:
     acceptance ladder  dt 1e-4: 0.83   5e-5: 0.90   2e-5: 0.94   1e-5: 0.92
     chosen dt 2e-5 (4x the old step), production 2M steps, Eq. 33 on
 
-Three predictions were registered before the run; the scoreboard:
+Three predictions were registered before the run; the scoreboard
+(CORRECTED 2026-07-30, see the sigma_sto note below):
 
-    sigma_sto collapses      REFUTED   162k nats (tail stars own the batch
-                                       noise; heavy-tailed likelihood is the
-                                       eventual fix)
+    sigma_sto collapses      HIT       3,337 nats at the true fitted
+                                       endpoint vs 135k on the first
+                                       likelihood, a ~40x collapse. The
+                                       162k originally recorded as a
+                                       refutation was measured at the
+                                       bug-scrambled warm start.
     s lands near 0.049       NEAR HIT  s = 0.0452 +- 0.0010; the shift is
                                        explained: s equalizes star weights,
                                        the fit improved, residuals shrank
     z std lands near 1       HIT       z std 0.948, calibrated
+
+sigma_sto correction (2026-07-30): the production run measured sigma_sto
+once, at its starting state, which the parameter-ordering bug had
+scrambled; a garbage network's residual tails inflate the batch variance,
+hence 162k. Re-measured at the true fitted endpoint the corrected model
+gives 3,337 nats. Two consequences. The "tail stars own sigma_sto" story
+was an artifact of the scrambled state (the |z| > 4 tail is real, 41
+stars, but it is not what set sigma_sto). And the scatter production's
+Eq. 33 gate ran with softening 1/162k, about 49x too lenient, so its 0.99
+acceptance and the revival ladder overstate the gate's health; the
+chain's validity rests on the exact full-batch finisher (accepts the
+endpoint at 0.98) and the drift checks, which are unaffected. Caught by
+the heteroscedastic run's smoke test measuring sigma_sto at a clean
+warm start.
 
 And the run delivered more than predicted. RMSE 0.0466, the campaign
 best (equal weighting freed the fit from the tiny-error stars). The
