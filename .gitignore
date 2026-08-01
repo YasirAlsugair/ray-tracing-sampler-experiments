@@ -68,3 +68,4 @@ results/tables/exp7*.npz
 !results/tables/exp7_analysis_pack.npz
 !results/tables/exp7_gaia_spectra_payload.npz
 !results/tables/exp7_ood_payload.npz
+!results/tables/exp7h_pack.npz

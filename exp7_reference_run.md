@@ -166,6 +166,46 @@ cost a 10x smaller step, which is the scaling argument for minibatch
 gates at scale, now measured on our own target. Chain file:
 results/tables/exp7s_exact_dt2e-06.npz (gitignored).
 
+## The heteroscedastic run (2026-07-30/31, pods exp7-hetero / exp7-hetero-3)
+
+Motivated by the z-binning of the scatter chain: z std runs 0.39 to 1.43
+across label-error bins (0.64 to 1.22 across [M/H]), so one global s
+calibrates the average, not the structure. The model gains a second
+output channel: sigma(x) = exp(-3 + r(x)), var_i = err_i^2 + sigma(x)^2,
+D = 11,394, warm-started exactly at the scatter solution (mu head
+copied, sigma head flat at the endpoint's s; verified bit-identical).
+Driver: experiments/exp7_gaia_hetero.py.
+
+With the honest gate softening (sigma_sto 3,337 nats at the clean seed,
+see the correction above) the tuning ladder reads 0.04 / 0.23 / 0.39 /
+0.45 / 0.45 for dt 1e-4 down to 5e-6: a plateau at a NEW noise ceiling
+of 0.45, knee at dt 1e-5. So the scatter run's "gate revival"
+(0.83-0.94) was mostly the over-softening artifact; honestly calibrated,
+the corrected-target gate behaves like the first-likelihood one with a
+higher ceiling and a 2x larger knee.
+
+Production 2M steps at dt 1e-5 plus three 500k convergence legs
+(3.5M total; the first pod died to a depleted balance mid-converge and
+the run was reproduced from its deterministic seeds):
+
+    RMSE 0.0473 (scatter 0.0466)   z std 1.060   acceptance ~0.5
+    sigma(x): median 0.035, 16/84 pct [0.016, 0.061], max 0.48
+    z std by label-error bin: 0.95 / 1.04 / 1.06 / 1.10
+      (was 0.39 / 0.66 / 1.04 / 1.43 under the global s)
+
+The calibration STRUCTURE is fixed: near-flat z std across the bins
+where the global s failed, at a cost of 0.0007 in RMSE (a model allowed
+to call stars noisy stops over-fitting them). Convergence is partial and
+honestly reported: misfit is level, but the weighted norm still marches
+(+925 vs noise 270 on the final quarter) and the median sigma(x) drifts
+slowly down, i.e. the per-star structure is still sharpening at 3.5M
+steps. Acceptance sits at the honest ceiling, so the drift checks carry
+the verdict; a full convergence pass (or an exact finisher) is a
+deliberate longer job. Artifacts: results/tables/exp7h_pack.npz
+(50 final-quarter members, traces, final state; verified to reproduce
+the pod report to the digit) and the pod log exp7h_pod.log; the raw
+chain files are reproducible from the seeds.
+
 ## Open items
 
 - Intrinsic scatter s as an 11,330th parameter, then recheck z std.
