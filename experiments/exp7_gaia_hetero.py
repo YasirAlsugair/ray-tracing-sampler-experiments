@@ -42,6 +42,7 @@ Modes:
     python exp7_gaia_hetero.py converge DT [MAXLEGS]
 """
 import math
+import os
 import sys
 import time
 from pathlib import Path
@@ -57,7 +58,10 @@ from raytrace_torch import Raytracer
 
 DEV = ("cuda" if torch.cuda.is_available()
        else "mps" if torch.backends.mps.is_available() else "cpu")
-BATCH = 1024
+# Batch size, overridable for the bigger-batch escalation: a larger batch
+# shrinks sigma_sto, raises the gate's noise ceiling, and moves the tuning
+# knee to a larger dt. Recorded in every saved npz.
+BATCH = int(os.environ.get("EXP7H_BATCH", "1024"))
 TEST_EVERY = 30
 SNAPSHOT_EVERY = 250
 SEED = 0
@@ -397,6 +401,25 @@ def convergepack(dt, Xs, y, yerr, leg_steps=500_000, max_legs=6):
     return stationary
 
 
+def bigstep(Xs, y, yerr, max_legs=6):
+    """The bigger-batch escalation: re-tune the dt ladder from the pack's
+    final state at the current BATCH (set EXP7H_BATCH), pick the knee, then
+    run convergence legs at that dt via convergepack."""
+    state = np.load(TAB / "exp7h_pack.npz")["final_state"]
+    prev_acc, prev_dt, chosen = None, None, None
+    for dt in (1e-4, 5e-5, 2e-5, 1e-5):
+        acc = run(dt, Xs, y, yerr, 3000, initial_state=state, save=False)
+        print(f"[bigstep tune] batch={BATCH}  dt={dt:g}  "
+              f"Eq.33 acceptance={acc:.2f}", flush=True)
+        if prev_acc is not None and acc - prev_acc < 0.02:
+            chosen = prev_dt
+            break
+        prev_acc, prev_dt = acc, dt
+    chosen = chosen if chosen is not None else prev_dt
+    print(f"[bigstep] batch={BATCH}, chosen dt={chosen:g}", flush=True)
+    convergepack(chosen, Xs, y, yerr, max_legs=max_legs)
+
+
 @torch.no_grad()
 def report(dt, Xs, y, yerr, tXs, ty, tyerr, members=50):
     files = arm_files_h(dt)
@@ -478,4 +501,7 @@ if __name__ == "__main__":
         dt = float(sys.argv[2])
         legs = int(sys.argv[3]) if len(sys.argv) > 3 else 6
         convergepack(dt, Xs, y, yerr, max_legs=legs)
+    elif mode == "bigstep":
+        legs = int(sys.argv[2]) if len(sys.argv) > 2 else 6
+        bigstep(Xs, y, yerr, max_legs=legs)
     print("EXP7H-DONE", flush=True)
