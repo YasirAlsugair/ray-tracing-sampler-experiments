@@ -344,6 +344,59 @@ def converge(dt, Xs, y, yerr, leg_steps=500_000, max_legs=4):
     return stationary
 
 
+def convergepack(dt, Xs, y, yerr, leg_steps=500_000, max_legs=6):
+    """Resume convergence from exp7h_pack.npz when the raw chain files are
+    gone (pod terminated): the pack's final_state seeds the continuation and
+    its concatenated traces are the drift-check history. New legs land in
+    _cont{k} files."""
+    pack = np.load(TAB / "exp7h_pack.npz")
+
+    def cont_files():
+        files, k = [], 1
+        while (TAB / f"exp7h_rt33_dt{dt:g}_cont{k}.npz").exists():
+            files.append(TAB / f"exp7h_rt33_dt{dt:g}_cont{k}.npz")
+            k += 1
+        return files
+
+    def cur_state():
+        f = cont_files()
+        return np.load(f[-1])["snapshots"][-1] if f else pack["final_state"]
+
+    model = make_model()
+    load_flat(model, cur_state())
+    sigma = estimate_sigma_sto(model, Xs, y, yerr, len(Xs))
+    print(f"[convergepack dt={dt:g}] resumed from pack final state, "
+          f"sigma_sto = {sigma:,.1f}", flush=True)
+
+    def status():
+        f = cont_files()
+        oks, notes = [], []
+        for name in ("misfit", "wnorm", "sig_med"):
+            series = np.concatenate([pack[name]] +
+                                    [np.load(x)[name] for x in f])
+            dr, no = drift_check(series)
+            ok = abs(dr) < 2 * no
+            oks.append(ok)
+            notes.append(f"{name} {dr:+.4g}/{no:.4g} "
+                         f"{'level' if ok else 'moving'}")
+        return all(oks), "; ".join(notes)
+
+    stationary, line = status()
+    print(f"[convergepack dt={dt:g}] {line}", flush=True)
+    for _ in range(max_legs):
+        if stationary:
+            break
+        k = len(cont_files()) + 1
+        out = TAB / f"exp7h_rt33_dt{dt:g}_cont{k}.npz"
+        run(dt, Xs, y, yerr, leg_steps, initial_state=cur_state(),
+            sigma_fixed=sigma, out_file=out, seed=SEED + 10 + k)
+        stationary, line = status()
+        print(f"[convergepack dt={dt:g}] -> "
+              f"{'STATIONARY' if stationary else 'in transit'}; {line}",
+              flush=True)
+    return stationary
+
+
 @torch.no_grad()
 def report(dt, Xs, y, yerr, tXs, ty, tyerr, members=50):
     files = arm_files_h(dt)
@@ -421,4 +474,8 @@ if __name__ == "__main__":
         dt = float(sys.argv[2])
         legs = int(sys.argv[3]) if len(sys.argv) > 3 else 4
         converge(dt, Xs, y, yerr, max_legs=legs)
+    elif mode == "convergepack":
+        dt = float(sys.argv[2])
+        legs = int(sys.argv[3]) if len(sys.argv) > 3 else 6
+        convergepack(dt, Xs, y, yerr, max_legs=legs)
     print("EXP7H-DONE", flush=True)
