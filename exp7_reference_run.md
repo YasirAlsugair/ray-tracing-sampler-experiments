@@ -195,16 +195,33 @@ the run was reproduced from its deterministic seeds):
 
 The calibration STRUCTURE is fixed: near-flat z std across the bins
 where the global s failed, at a cost of 0.0007 in RMSE (a model allowed
-to call stars noisy stops over-fitting them). Convergence is partial and
-honestly reported: misfit is level, but the weighted norm still marches
-(+925 vs noise 270 on the final quarter) and the median sigma(x) drifts
-slowly down, i.e. the per-star structure is still sharpening at 3.5M
-steps. Acceptance sits at the honest ceiling, so the drift checks carry
-the verdict; a full convergence pass (or an exact finisher) is a
-deliberate longer job. Artifacts: results/tables/exp7h_pack.npz
-(50 final-quarter members, traces, final state; verified to reproduce
-the pod report to the digit) and the pod log exp7h_pod.log; the raw
-chain files are reproducible from the seeds.
+to call stars noisy stops over-fitting them).
+
+Convergence (six more 500k legs, 2026-08-03, resumed from the pack via
+the convergepack mode after the original pod's disk was lost): at 6.5M
+total steps the misfit and the median sigma(x) are level, but the
+weighted norm still marches (+771 vs noise 231, a steady ~+600/leg
+through nine legs with no deceleration). Verdict: the norm does not
+level at this dt on this target; that is a finding, the same
+phenomenology as the first-likelihood chain, not an unfinished run.
+The calibration result is stable throughout (extended chain: RMSE
+0.0480, z std 1.080, bins 0.97 / 1.07 / 1.08 / 1.09). Per the
+convergence rule the hetero chain is NOT promoted to chain of record;
+the scatter chain keeps that role. Escalations if full convergence is
+ever needed: a larger batch (raises the gate ceiling and permits a
+bigger step) or an exact finisher stamp.
+
+The tail case for a Student-t likelihood STRENGTHENED as sigma(x)
+sharpened: z kurtosis 8.1 (Gaussian 3), 127 stars beyond |z| of 4, most
+of them modest misses on stars the model now declares precise. sigma(x)
+does absorb the OLD tail (29 of the 41 global-s tail stars rescued,
+their sigma(x) at the 91st percentile), so the remaining tail is a
+shape problem, not a scale problem: the motivated rung three is
+Student-t with scale sigma(x), a decision for Yasir and Josh.
+
+Artifacts: results/tables/exp7h_pack.npz (3.5M-step members) and
+exp7h_pack2.npz (6.5M-step members, traces, final state), pod logs
+exp7h_pod.log / exp7legs.log; raw chain files reproducible from seeds.
 
 ## Open items
 
