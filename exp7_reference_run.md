@@ -197,19 +197,33 @@ The calibration STRUCTURE is fixed: near-flat z std across the bins
 where the global s failed, at a cost of 0.0007 in RMSE (a model allowed
 to call stars noisy stops over-fitting them).
 
-Convergence (six more 500k legs, 2026-08-03, resumed from the pack via
-the convergepack mode after the original pod's disk was lost): at 6.5M
-total steps the misfit and the median sigma(x) are level, but the
-weighted norm still marches (+771 vs noise 231, a steady ~+600/leg
-through nine legs with no deceleration). Verdict: the norm does not
-level at this dt on this target; that is a finding, the same
-phenomenology as the first-likelihood chain, not an unfinished run.
-The calibration result is stable throughout (extended chain: RMSE
-0.0480, z std 1.080, bins 0.97 / 1.07 / 1.08 / 1.09). Per the
-convergence rule the hetero chain is NOT promoted to chain of record;
-the scatter chain keeps that role. Escalations if full convergence is
-ever needed: a larger batch (raises the gate ceiling and permits a
-bigger step) or an exact finisher stamp.
+Convergence was a campaign of its own (2026-08-03/04). At batch 1024
+the norm marched indefinitely (+600/leg through nine legs, no
+deceleration). Escalating to batch 4096 at the same dt halved sigma_sto
+(3,743 to ~1,940 nats), lifted acceptance to ~0.51, and did NOT slow
+the march at first, which ruled out gradient-noise heating: the chain
+was genuinely still descending, and with cleaner gradients it descended
+faster. Over 19 further 500k legs (16M steps total) the march
+decelerated (+1,773 to +947 to +542 per leg), plateaued, and reversed;
+the drift rule then declared ALL THREE series level (misfit +843 vs
+noise 3,242; wnorm -1,563 vs 1,316; sig_med level). CONVERGED, at 16M
+steps and roughly $45 of pod time end to end.
+
+Converged-chain numbers (50 members from the final quarter,
+exp7h_pack3.npz, verified locally): RMSE 0.0494, z std 1.092, bins
+0.99 / 1.09 / 1.09 / 1.07, sigma(x) median 0.0322 [16/84: 0.0141,
+0.0620], tau 0.0049, tail 118 stars past |z| of 4, z kurtosis 8.5.
+Note the honest RMSE cost of full convergence: 0.0466 (scatter) to
+0.0494; as the chain settled into the posterior bulk at honest
+per-star weights, the point accuracy relaxed to the intrinsic ~0.049
+residual floor. Calibration flatness held throughout every snapshot.
+
+CHAIN OF RECORD: the hetero chain, now that both chains pass all
+drift checks (the both-must-converge rule). Calibration is the purpose
+of the noise model and only the hetero chain keeps its per-star
+promises. The scatter chain remains the best point predictor (RMSE
+0.0466) and the global-s special case for comparisons. The Student-t
+case stands at kurtosis 8.5.
 
 The tail case for a Student-t likelihood STRENGTHENED as sigma(x)
 sharpened: z kurtosis 8.1 (Gaussian 3), 127 stars beyond |z| of 4, most
