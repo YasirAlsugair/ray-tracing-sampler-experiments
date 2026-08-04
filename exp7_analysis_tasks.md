@@ -82,10 +82,16 @@ moves or scales with metallicity.
 
 ## Caveats that must survive into any figure
 
-The chain of record is `member_preds_scatter`, Metropolis-checked
-throughout, converged on all three drift checks with acceptance 0.99, and
-globally calibrated; its spreads can be quoted without the old
-lower-bound caveat. The gated5e6 arrays are the previous record (spread
-collapsed by the gate, keep for comparison only), and the N(0,1) chain is
-a prior ablation, not a competitor. Changes to the sampler or the target
+Update (2026-08-04): the chain of record is now the HETEROSCEDASTIC
+chain (the network predicts a per-star scatter sigma(x)); its 50
+members are in `results/tables/exp7h_pack3.npz` (converged at 16M
+steps; z std 1.09 with flat calibration across label-error bins). Load
+them with `experiments/exp7_gaia_hetero.py`'s `make_model`/`load_flat`
+and compute var_i = tau_i^2 + err_i^2 + sigma(x_i)^2 per star. The
+`member_preds_scatter` arrays here are the global-s chain: still the
+best point predictor (RMSE 0.0466) and the right comparison baseline,
+but its per-star calibration is uneven (z std 0.39 to 1.43 across
+label-error bins). The gated5e6 arrays are the older record (spread
+collapsed by the gate, comparison only), and the N(0,1) chain is a
+prior ablation, not a competitor. Changes to the sampler or the target
 definition remain out of scope here and go through Yasir and Josh.
