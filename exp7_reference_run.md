@@ -248,3 +248,57 @@ exp7h_pod.log / exp7legs.log; raw chain files reproducible from seeds.
 - Heavy-tailed likelihood for the |z| > 4 tail stars (they own sigma_sto);
   a modeling decision for Yasir and Josh, out of scope for the reference
   run.
+
+## Sampler or likelihood? The MAP and ensemble baselines (2026-08-05)
+
+The question (raised for the poster): is the flat per-star calibration a
+property of SAMPLING, or would any fit of the same likelihood get it?
+Context numbers: the chain's predictive variance is 93.6 percent
+sigma(x)^2, 3.7 percent err^2, 2.2 percent tau^2 (medians over test);
+dropping tau moves SD(z) from 1.08 to 1.24.
+
+Two baselines, same target imported from exp7_gaia_hetero (never
+re-derived), same two-stage schedule as the chain's warm start (sigma
+head frozen at 0.045, then released), Adam batch 1024, 200 epochs per
+stage. Drivers: experiments/exp7_gaia_map.py (3-learning-rate sweep,
+best training loss kept) and experiments/exp7_gaia_ensemble.py (10
+seeds, total-variance predictive). Reference chain values below use the
+exact mixture variance err^2 + mean_m sigma_m^2 + var_m mu_m (the
+notebook's median-of-sigma convention reads 1.091/8.5/118 on the same
+members).
+
+                  MAP        ensemble-10    chain
+  RMSE            0.0489     0.0473         0.0494
+  SD(z)           1.180      0.962          1.08
+  SD(z) by bin    1.26/1.24/1.13/1.04
+                             0.79/0.91/0.97/1.05
+                                            0.97/1.07/1.07/1.07
+  z kurtosis      15.9       6.6            8.1
+  |z| > 4         209        61             108
+  sigma(x) med    0.0354     0.0354         0.033
+
+Verdicts. (1) MAP fails the structure test outright: a staircase in the
+bins, double the tail stars. The flat calibration is NOT a pure
+likelihood property. (2) The sweep showed calibration ANTI-correlates
+with training loss across learning rates (best-loss run SD(z) 1.18, a
+worse-loss run 1.09): descending deeper into the mode buys accuracy by
+spending calibration, a tension the chain does not face. (3) The
+ensemble is a genuine competitor on aggregates: best RMSE, best tails.
+But its bins are a staircase too, inverted: member spread tau 0.0079
+(vs the chain's 0.0049) over-pads the precise stars by 20 percent
+(bin one at 0.79). Max bin deviation from 1: chain 0.07, ensemble
+0.21, MAP 0.26. Only the sampled posterior distributes uncertainty
+correctly star by star; that, not aggregate SD(z), is the defensible
+poster claim. SGHMC at matched compute (the comparison the thesis
+wants) is specced for PyTorch in this repo and awaits a go decision.
+
+Artifacts: results/tables/exp7_map.npz, exp7_ensemble.npz.
+
+Data-hygiene note (2026-08-05, verified): exp7h_pack3.npz window_raw
+has 9,624 non-finite entries, contiguous at the end of the final
+batch-4096 leg (indices 523,690..533,313), 9,623 of them auto-accepted
+(the NaN-ledger guard firing at leg end, not at a saturated start).
+Masked acceptance for the 4096 span is 0.497 vs 0.512 unmasked; the
+1024 span is clean at 0.462. The batch-size effect on the ceiling is
+therefore +0.035, not +0.05. Mask non-finite window_raw in anything
+reading acceptance from packs.

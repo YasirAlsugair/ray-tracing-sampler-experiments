@@ -95,3 +95,12 @@ label-error bins). The gated5e6 arrays are the older record (spread
 collapsed by the gate, comparison only), and the N(0,1) chain is a
 prior ablation, not a competitor. Changes to the sampler or the target
 definition remain out of scope here and go through Yasir and Josh.
+
+Update (2026-08-05): two optimizer baselines on the same hetero target
+now exist for the sampler-vs-likelihood question: exp7_map.npz (Adam
+MAP, bins 1.26 to 1.04, tails 209) and exp7_ensemble.npz (10 seeds,
+best RMSE 0.0473 and tails 61, but bins 0.79 to 1.05). Only the chain
+is flat per bin; see exp7_reference_run.md for the full table. ALSO:
+when reading acceptance from exp7h_pack3.npz, mask non-finite
+window_raw first (9,624 NaN entries at the end of the final leg were
+auto-accepted; masked 4096-span acceptance is 0.497, not 0.512).
