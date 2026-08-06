@@ -467,6 +467,180 @@ def report(dt, Xs, y, yerr, tXs, ty, tyerr, members=50):
         print(f"  [{lo:g}, {hi:g})  n={m.sum():>6}  z std {zc[m].std():.2f}")
 
 
+# ---------------------------------------------------------------------------
+# SGHMC arm (Task 3 of the sampler-vs-likelihood question). Physical
+# parameterization matching rtbench indexed_sg, so step_size means the same
+# thing as in the AutoRT studies:
+#     v     <- v + eps*g - eps*friction*v + sqrt(2*eps*friction)*xi
+#     theta <- theta + eps*v
+# with g the gradient of the LOG posterior. Deliberately NO gradient-noise
+# correction (B_hat = 0): the uncorrected temperature bias is the effect
+# under study. Validated on an exact-gradient Gaussian toy: Var(theta)
+# 1.0002, Var(v) 1.024 at eps*friction = 0.05.
+#
+# Freeze guard: SGHMC has no accept test, so a drift verdict alone is
+# worthless (a frozen chain passes any stationarity rule). Every snapshot
+# therefore records per-step displacement AND the kinetic temperature
+# mean(v^2), whose stationary value is 1.0 at the true posterior
+# temperature; heating reads directly as temp > 1.
+
+def sg_start_state():
+    """The converged hetero chain-of-record endpoint: the stationarity-test
+    design starts every sampler AT the answer and asks who can hold it."""
+    return np.load(TAB / "exp7h_pack3.npz")["final_state"]
+
+
+@torch.no_grad()
+def _sghmc_step(params, velocities, sigmas, eps, friction, gen):
+    """One SGHMC update. Call after backward() on n_train*batch_nll_mean, so
+    p.grad holds -grad(ln likelihood); the prior gradient is added here."""
+    decay = 1.0 - eps * friction
+    noise = math.sqrt(2.0 * eps * friction)
+    for p, v, s in zip(params, velocities, sigmas):
+        grad_log_post = -p.grad - p / (s * s)
+        v.mul_(decay).add_(grad_log_post, alpha=eps)
+        v.add_(torch.randn(p.shape, generator=gen, device="cpu").to(p.device),
+               alpha=noise)
+        p.add_(v, alpha=eps)
+
+
+def run_sghmc(eps, friction, Xs, y, yerr, n_steps, initial_state=None,
+              out_file=None, seed=SEED, pilot=False):
+    n_train = len(Xs)
+    torch.manual_seed(seed)
+    batch_stream = torch.Generator().manual_seed(seed + 99)
+    noise_gen = torch.Generator().manual_seed(seed + 55)
+
+    model = make_model()
+    sigmas = sigmas_for(model)
+    load_flat(model, initial_state if initial_state is not None
+              else sg_start_state())
+    params = list(model.parameters())
+    velocities = [torch.randn(p.shape, generator=noise_gen,
+                              device="cpu").to(p.device) for p in params]
+
+    m0, w0 = exact_decomposition(model, sigmas, Xs, y, yerr)
+    snapshots, misfits, wnorms, steps = [], [], [], []
+    sig_med, sig_lo, sig_hi, temps, disps = [], [], [], [], []
+    t0 = time.time()
+    for step in range(n_steps):
+        batch = torch.randint(0, n_train, (BATCH,),
+                              generator=batch_stream).to(DEV)
+        model.zero_grad(set_to_none=False)
+        (n_train * batch_nll_mean(model, Xs, y, yerr, batch)).backward()
+        at_snap = (step + 1) % SNAPSHOT_EVERY == 0
+        if at_snap:
+            before = params[0].detach().clone()
+        _sghmc_step(params, velocities, sigmas, eps, friction, noise_gen)
+        if pilot and (step + 1) % 200 == 0:
+            if not torch.isfinite(params[0]).all():
+                return {"status": "DIVERGED", "at_step": step + 1}
+        if at_snap and not pilot:
+            misfit, wnorm = exact_decomposition(model, sigmas, Xs, y, yerr)
+            med, lo, hi = sigma_quantiles(model, Xs)
+            with torch.no_grad():
+                temp = (sum((v ** 2).sum().item() for v in velocities)
+                        / sum(v.numel() for v in velocities))
+                disp = float((params[0] - before).abs().median())
+            steps.append(step + 1)
+            misfits.append(misfit)
+            wnorms.append(wnorm)
+            sig_med.append(med)
+            sig_lo.append(lo)
+            sig_hi.append(hi)
+            temps.append(temp)
+            disps.append(disp)
+            snapshots.append(torch.cat([p.detach().flatten()
+                                        for p in params])
+                             .cpu().numpy().astype(np.float32))
+    wall = time.time() - t0
+
+    if pilot:
+        if not torch.isfinite(params[0]).all():
+            return {"status": "DIVERGED", "at_step": n_steps}
+        m1, w1 = exact_decomposition(model, sigmas, Xs, y, yerr)
+        temp = (sum((v ** 2).sum().item() for v in velocities)
+                / sum(v.numel() for v in velocities))
+        return {"status": "ok", "d_misfit": m1 - m0, "d_wnorm": w1 - w0,
+                "temp": temp}
+
+    out = out_file or TAB / f"exp7sg_eps{eps:g}_fr{friction:g}.npz"
+    np.savez(out, snapshots=np.stack(snapshots), steps=np.array(steps),
+             misfit=np.array(misfits), wnorm=np.array(wnorms),
+             sig_med=np.array(sig_med), sig_lo=np.array(sig_lo),
+             sig_hi=np.array(sig_hi), temp=np.array(temps),
+             displacement=np.array(disps), eps=eps, friction=friction,
+             batch=BATCH, n_steps=n_steps, wall_s=wall,
+             misfit_start=m0, wnorm_start=w0)
+    print(f"[sghmc eps={eps:g} fr={friction:g}] {n_steps:,} steps in "
+          f"{wall / 60:.1f} min -> misfit {misfits[-1]:,.0f} (start "
+          f"{m0:,.0f}), wnorm {wnorms[-1]:,.0f} (start {w0:,.0f}), "
+          f"temp {temps[-1]:.2f}, sigma(x) med {sig_med[-1]:.4f}, "
+          f"saved {Path(out).name}", flush=True)
+    return out
+
+
+def sghmc_tune(Xs, y, yerr, steps=3000):
+    """2D pilot grid from the converged state: divergence, heating (kinetic
+    temperature), and exact-misfit drift after `steps` steps."""
+    state = sg_start_state()
+    print(f"{'eps':>8} {'friction':>9} {'status':>9} {'d_misfit':>12} "
+          f"{'d_wnorm':>10} {'temp':>6}", flush=True)
+    for eps in (1e-6, 3e-6, 1e-5, 3e-5):
+        for friction in (30.0, 300.0, 3000.0):
+            r = run_sghmc(eps, friction, Xs, y, yerr, steps,
+                          initial_state=state, pilot=True)
+            if r["status"] != "ok":
+                print(f"{eps:>8g} {friction:>9g} {'DIVERGED':>9} "
+                      f"{'at ' + str(r['at_step']):>12}", flush=True)
+            else:
+                print(f"{eps:>8g} {friction:>9g} {'ok':>9} "
+                      f"{r['d_misfit']:>+12,.0f} {r['d_wnorm']:>+10,.0f} "
+                      f"{r['temp']:>6.2f}", flush=True)
+
+
+@torch.no_grad()
+def sg_report(path, tXs, ty, tyerr, members=50):
+    d = np.load(path)
+    snaps = d["snapshots"]
+    quarter = snaps[3 * len(snaps) // 4:]
+    take = np.linspace(0, len(quarter) - 1,
+                       min(members, len(quarter))).astype(int)
+    model = make_model()
+    mus, sig2s = [], []
+    for state in quarter[take]:
+        load_flat(model, state)
+        mu, r = model.mu_r(tXs)
+        mus.append(mu.cpu().numpy())
+        sig2s.append(np.exp(2.0 * (LNS0 + r.cpu().numpy())))
+    mus, sig2s = np.array(mus), np.array(sig2s)
+    y_np, te = ty.cpu().numpy(), tyerr.cpu().numpy()
+    mu_hat = mus.mean(0)
+    var_tot = te ** 2 + sig2s.mean(0) + mus.var(0)   # mixture convention
+    z = (y_np - mu_hat) / np.sqrt(var_tot)
+    for name in ("misfit", "wnorm", "sig_med", "temp"):
+        dr, no = drift_check(d[name])
+        print(f"drift check {name}: {dr:+.4g}/{no:.4g} "
+              f"({'level' if abs(dr) < 2 * no else 'moving'})")
+    print(f"kinetic temp: start-quarter mean "
+          f"{d['temp'][:len(d['temp']) // 4].mean():.2f}, final-quarter "
+          f"mean {d['temp'][3 * len(d['temp']) // 4:].mean():.2f} "
+          f"(1.0 = true posterior temperature)")
+    print(f"displacement median (motion guard): "
+          f"{np.median(d['displacement']):.2e}")
+    kurt = float(((z - z.mean()) ** 4).mean() / z.std() ** 4)
+    bins = [float(z[(te >= lo) & (te < hi)].std())
+            for lo, hi in ((0.0, 0.004), (0.004, 0.006),
+                           (0.006, 0.01), (0.01, 0.02))]
+    print(f"RMSE {np.sqrt(((mu_hat - y_np) ** 2).mean()):.4f}  "
+          f"(chain 0.0494)   SD(z) {z.std():.3f}  (chain 1.08)")
+    print(f"SD(z) by bin {' / '.join(f'{b:.2f}' for b in bins)}  "
+          f"(chain 0.97/1.07/1.07/1.07)")
+    print(f"kurtosis {kurt:.1f} (chain 8.1)   |z|>4: "
+          f"{int((np.abs(z) > 4).sum())} (chain 108)   sigma(x) med "
+          f"{float(np.median(np.sqrt(sig2s.mean(0)))):.4f}")
+
+
 if __name__ == "__main__":
     mode = sys.argv[1] if len(sys.argv) > 1 else "auto"
     Xs, y, yerr, tXs, ty, tyerr = load_data()
@@ -504,4 +678,12 @@ if __name__ == "__main__":
     elif mode == "bigstep":
         legs = int(sys.argv[2]) if len(sys.argv) > 2 else 6
         bigstep(Xs, y, yerr, max_legs=legs)
+    elif mode == "sghmctune":
+        sghmc_tune(Xs, y, yerr)
+    elif mode == "sghmcrun":
+        eps, friction = float(sys.argv[2]), float(sys.argv[3])
+        n = int(sys.argv[4]) if len(sys.argv) > 4 else 2_000_000
+        run_sghmc(eps, friction, Xs, y, yerr, n)
+    elif mode == "sgreport":
+        sg_report(sys.argv[2], tXs, ty, tyerr)
     print("EXP7H-DONE", flush=True)

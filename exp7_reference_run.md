@@ -302,3 +302,39 @@ Masked acceptance for the 4096 span is 0.497 vs 0.512 unmasked; the
 1024 span is clean at 0.462. The batch-size effect on the ceiling is
 therefore +0.035, not +0.05. Mask non-finite window_raw in anything
 reading acceptance from packs.
+
+## SGHMC arm launched, and pack3 endpoint forensics (2026-08-05 night)
+
+Task 3 go order given. SGHMC in this repo (exp7_gaia_hetero.py: sghmctune
+/ sghmcrun / sgreport), physical rtbench parameterization, B_hat = 0 on
+purpose, validated at T = 1 on an exact-gradient Gaussian (Var theta
+1.0002). Freeze guards: per-step displacement plus kinetic temperature
+mean(v^2) (stationary value 1.0; heating reads directly).
+
+Pilot grid from the converged state (3,000 steps, batch 1024, exact
+misfit deltas): friction 30 heats catastrophically and visibly (kinetic
+T 1.38 -> 9.62 as eps runs 1e-6 -> 3e-5; misfit +30k, wnorm +62k at the
+top). Friction 3000 holds T 1.00-1.18 at every eps: the noise-absorbing
+regime, bought at tiny effective theta-diffusion. Production arms:
+eps 1e-5 friction 3000 (survivor, 2M steps) and eps 1e-5 friction 30
+(heated contrast, 500k), overnight, local.
+
+Forensics triggered by the grid: every tame config slid ~11k nats of
+misfit downhill from the start. Cause found, not an SGHMC bug: the
+pack3 FINAL STATE is the last snapshot of the NaN-ledger episode. The
+excursion (14 snapshots reaching misfit -72,694, indices 62,824..62,844
+of 64,000) sits exactly at the start of the non-finite window_raw
+stretch; the auto-accepting gate rode the chain back down over the last
+~290k steps, and the endpoint landed at -200,016, ~7k nats above the
+chain's final-quarter median (-207,318). The 50 record members are
+clean (-208,317..-200,016, none near the excursion), so all calibration
+verdicts stand. But the endpoint seeded both the Student-t chain and
+SGHMC, which is why both slid immediately (burn-in from a band-top
+state, absorbed by their own drift rules). RULE for future warm starts:
+seed from a median-misfit member, not final_state.
+
+Open comparison the production run decides: SGHMC's quick equilibrium
+(~-211k) sits ~4k nats below the RT chain's time-average (-206,766).
+If it levels there, two samplers equilibrate at different misfits on
+one target and one of them is at the wrong temperature; the kinetic
+thermometer and the grid decide which way that argument runs.
