@@ -338,3 +338,29 @@ Open comparison the production run decides: SGHMC's quick equilibrium
 If it levels there, two samplers equilibrate at different misfits on
 one target and one of them is at the wrong temperature; the kinetic
 thermometer and the grid decide which way that argument runs.
+
+## SGHMC production verdicts (2026-08-06, overnight)
+
+Survivor arm (eps 1e-5, friction 3000, 2M steps, batch 1024, pod):
+kinetic temperature 1.08-1.09 throughout (8-9 percent HOT even in the
+best hand-tuned config); misfit, sigma(x), and temperature level but the
+weighted norm still marching at 2M steps (+709/207), i.e. mid-campaign
+by the RT chain's own standard. Calibration: SD(z) 1.155, bins
+1.06/1.18/1.13/1.08 (not flat), kurtosis 10.3, tails 170 vs the chain's
+108. sigma(x) median lands exactly on the chain's 0.0322: SGHMC finds
+the same noise model and distributes it worse. RMSE 0.0475.
+
+Heated arm (eps 1e-5, friction 30, 500k steps): equilibrates HOT,
+kinetic temperature 2.4-4.6, misfit 13k nats above the posterior and
+level there. Underconfident staircase bins 0.66/0.81/0.92/1.02 (the hot
+chain scatters members wide and over-pads everything); good RMSE 0.0474
+regardless: point accuracy is no evidence of a correct posterior. Both
+arms' displacement guards live (no frozen-chain ambiguity).
+
+The claim this supports: SGHMC must tune friction against the
+gradient-noise scale to hold temperature, is measurably hot even then,
+and at this budget has no convergence certificate; RT holds temperature
+by construction with no noise-matched knob. Fair caveats: 2M is not
+16M (the survivor's bins might flatten with the full campaign), and
+this is one target. Slim packs: exp7sg_fr3000_pack.npz,
+exp7sg_fr30_pack.npz (traces incl. kinetic temp + 50 members each).
