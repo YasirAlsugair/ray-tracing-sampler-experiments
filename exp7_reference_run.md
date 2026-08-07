@@ -364,3 +364,25 @@ by construction with no noise-matched knob. Fair caveats: 2M is not
 16M (the survivor's bins might flatten with the full campaign), and
 this is one target. Slim packs: exp7sg_fr3000_pack.npz,
 exp7sg_fr30_pack.npz (traces incl. kinetic temp + 50 members each).
+
+## Student-t chain CERTIFIED (2026-08-07, 8.5M steps)
+
+All four drift checks level (misfit -294/459, wnorm +29/68, sig_med
+-2.2e-4/2.0e-4, nu -0.12/0.090) after the pod-termination resume via
+convergepack. Record pack: exp7t_pack_final.npz (50 members from the
+final 1M steps; the earlier history survives as traces).
+
+Final numbers (member-mixture convention): nu = 5.48 [16/84: 5.43,
+5.53], tightly determined and near the kurtosis-implied 5.1. RMSE
+0.0480 (Gaussian chain 0.0494: the t stops outliers bullying the fit).
+sigma(x) median 0.0235 (down from the Gaussian 0.0322: width moved
+from the scale into the tails). tau 0.0034. THE SHAPE RESULT: stars
+past the |z|=4-equivalent tail probability drop 108 -> 14 (chance
+1.6) under the fitted t's own yardstick. Width honesty is comparable
+to the Gaussian chain, not better: variance-z SD 1.119 (bins 1.05 to
+1.14) and PIT coverage 0.652/0.942/0.993 vs nominal, i.e. ~4 percent
+under-coverage. Verdict: rung 3 fixes the tail shape at no width cost
+and slightly better point accuracy; the remaining ~5-10 percent width
+tightness is shared with the Gaussian chain and is the next open item
+(candidates: the gate ceiling's residual bias, or richer sigma(x)).
+Campaign: 8.5M steps, one termination survived, ~$25 of pod time.
