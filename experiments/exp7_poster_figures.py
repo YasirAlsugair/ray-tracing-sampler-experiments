@@ -397,3 +397,43 @@ ax.legend(loc="lower left", bbox_to_anchor=(0.0, 1.0), frameon=False,
 save(fig, "exp7_ood.pdf")
 print("   OOD old ", {k: round(v, 2) for k, v in fr_old.items()})
 print("   OOD new ", {k: round(v, 2) for k, v in fr_new.items()})
+
+# ---- R: reliability (coverage) diagram ------------------------------------
+# The regression version of a reliability diagram: for each nominal central
+# probability p, the fraction of held-out stars whose label falls inside the
+# method's central p-interval, via each predictive's exact PIT (mixtures
+# handled properly, shapes included). Diagonal = honest; below = over-
+# confident; above = over-padded.
+def gauss_mix_pit(mus_m, var_m):
+    return np.mean(sstats.norm.cdf((y[None, :] - mus_m) / np.sqrt(var_m)),
+                   axis=0)
+
+pit_map = sstats.norm.cdf((y - mm["mu"]) / np.sqrt(te**2 + mm["sig"]**2))
+pit_en = gauss_mix_pit(en["mus"], te[None, :]**2 + en["sig2s"])
+pit_sg = gauss_mix_pit(mus_sg, te[None, :]**2 + sig2_sg)
+pit_ch = gauss_mix_pit(mus_h, te[None, :]**2 + sig2_h)
+pit_tt = pit          # the t-mixture PIT from the tails section
+
+grid = np.linspace(0.05, 0.99, 40)
+fig, ax = plt.subplots(figsize=(FIG_W * 0.72, 4.6))
+for pit_v, lab, col in ((pit_map, "optimizer (MAP)", SOFTGRAY),
+                        (pit_en, "deep ensemble", RTBLUE),
+                        (pit_sg, "SGHMC (tuned)", HMCRED),
+                        (pit_ch, "RTS, Gaussian", RTGOLD),
+                        (pit_tt, "RTS, Student-t", DARKGOLD)):
+    cov = [(np.abs(pit_v - 0.5) < p_ / 2).mean() for p_ in grid]
+    ax.plot(grid, cov, color=col, lw=2.0, label=lab)
+ax.plot([0, 1], [0, 1], color=INK, ls="--", lw=1.0)
+ax.set_xlabel("nominal coverage")
+ax.set_ylabel("empirical coverage, test set")
+ax.set_xlim(0, 1)
+ax.set_ylim(0, 1)
+ax.set_aspect("equal")
+ax.legend(frameon=False, loc="upper left", fontsize=F_TICK - 2)
+ax.text(0.62, 0.30, "below the line:\noverconfident", fontsize=F_TICK - 2,
+        color=SOFTGRAY)
+save(fig, "exp7_reliability.pdf")
+for pit_v, lab in ((pit_map, "MAP"), (pit_en, "ensemble"), (pit_sg, "SGHMC"),
+                   (pit_ch, "RTS-Gauss"), (pit_tt, "RTS-t")):
+    dev = max(abs((np.abs(pit_v - 0.5) < p_ / 2).mean() - p_) for p_ in grid)
+    print(f"   {lab:>10}: max |coverage - nominal| = {dev:.3f}")
