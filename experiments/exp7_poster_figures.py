@@ -437,3 +437,48 @@ for pit_v, lab in ((pit_map, "MAP"), (pit_en, "ensemble"), (pit_sg, "SGHMC"),
                    (pit_ch, "RTS-Gauss"), (pit_tt, "RTS-t")):
     dev = max(abs((np.abs(pit_v - 0.5) < p_ / 2).mean() - p_) for p_ in grid)
     print(f"   {lab:>10}: max |coverage - nominal| = {dev:.3f}")
+
+# ---- C: OOD ROC curves, the literature's currency --------------------------
+# AUC-ROC of the tau alarm per OOD group (Izmailov et al. report OOD this
+# way), with the 11-percent-budget operating point marked on each curve.
+# Chain of record throughout.
+tau_test_r = mus_h.std(0)
+thresh_r = np.quantile(tau_test_r, 0.89)
+
+
+def roc(pos, neg):
+    scores = np.concatenate([pos, neg])
+    is_pos = np.concatenate([np.ones(len(pos)), np.zeros(len(neg))])
+    order = np.argsort(-scores)
+    tp = np.cumsum(is_pos[order]) / len(pos)
+    fp = np.cumsum(1 - is_pos[order]) / len(neg)
+    auc = float(np.trapezoid(tp, fp))
+    return fp, tp, auc
+
+
+ood_taus = {}
+with torch.no_grad():
+    for gname in ("dwarfs", "hot", "flagged"):
+        Xo = torch.tensor(ood[f"Xs_{gname}"], dtype=torch.float32,
+                          device=H.DEV)
+        mus_o = []
+        for st in hp["members"]:
+            H.load_flat(hm, st)
+            mu, _ = hm.mu_r(Xo)
+            mus_o.append(mu.cpu().numpy())
+        ood_taus[gname] = np.array(mus_o).std(0)
+
+fig, ax = plt.subplots(figsize=(FIG_W * 0.62, 4.2))
+for gname, col in (("hot", DARKGOLD), ("dwarfs", RTGOLD),
+                   ("flagged", SOFTGRAY)):
+    fp, tp, auc = roc(ood_taus[gname], tau_test_r)
+    ax.plot(fp, tp, color=col, lw=2.0, label=f"{gname}  AUC {auc:.2f}")
+    op = float((ood_taus[gname] > thresh_r).mean())
+    ax.plot([0.11], [op], "o", color=col, ms=8, mec=INK, mew=0.8)
+ax.plot([0, 1], [0, 1], ls=":", color=INK, lw=1.2)
+ax.set_xlabel("false alarms (pristine flagged)")
+ax.set_ylabel("caught (OOD flagged)")
+ax.set_xlim(0, 1)
+ax.set_ylim(0, 1.02)
+ax.legend(loc="lower right", frameon=False)
+save(fig, "exp7_ood_roc.pdf")
