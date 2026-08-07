@@ -78,3 +78,4 @@ results/tables/exp7*.npz
 !results/tables/exp7t_pack_final.npz
 !results/tables/exp7sg_fr30_pack.npz
 !results/tables/exp7sg_fr3000_pack.npz
+poster_figures/
