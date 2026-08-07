@@ -627,7 +627,7 @@ for k, (name, test_scores, alarm) in enumerate(methods_f):
           for g, f in zip(groups_f, fracs)))
 ax.axhline(11.0, color="#666666", ls=(0, (4, 3)), lw=0.9, zorder=4,
            label="flag rate on pristine test (11%)")
-ax.set_xticks(xg, ["dwarfs", "hot stars", "survey-flagged"])
+ax.set_xticks(xg, ["dwarfs", "hot stars", "flagged by APOGEE"])
 ax.set_ylabel("% flagged as uncertain")
 ax.set_ylim(0, 108)
 for spine in ("left", "bottom"):
