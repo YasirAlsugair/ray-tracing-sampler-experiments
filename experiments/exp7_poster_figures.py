@@ -550,3 +550,63 @@ ax.set_xlabel("number of members averaged")
 ax.set_ylabel("test NLL (lower is better)")
 ax.legend(frameon=False, loc="upper right")
 save(fig, "exp7_members.pdf")
+
+# ---- F: imposter detection, one bar per method (the exp6 slide format) -----
+# Each method uses the uncertainty signal it actually has, thresholded at
+# its OWN 89th percentile on pristine test stars (shared 11 percent
+# budget): MAP its learned sigma(x) (a single network has no member
+# spread), ensemble/SGHMC/RTS their member disagreement tau.
+mw = np.load(TAB / "exp7_map_weights.npz")
+ew = np.load(TAB / "exp7_ensemble_weights.npz")
+
+
+def sig_of(model, X):
+    with torch.no_grad():
+        _, r = model.mu_r(X)
+        return np.exp(-3.0 + r.cpu().numpy())
+
+
+def tau_of(states, X):
+    mus = []
+    with torch.no_grad():
+        for st in states:
+            H.load_flat(hm, st)
+            mus.append(hm.mu_r(X)[0].cpu().numpy())
+    return np.array(mus).std(0)
+
+
+H.load_flat(hm, mw["state"])
+map_test = sig_of(hm, Xs)
+ens_test = tau_of(ew["states"], Xs)
+
+methods_f = [
+    ("point (MAP)", SOFTGRAY, map_test,
+     lambda X: (H.load_flat(hm, mw["state"]), sig_of(hm, X))[1]),
+    ("deep ensemble", RTBLUE, ens_test, lambda X: tau_of(ew["states"], X)),
+    ("SGHMC (tuned)", HMCRED, tau_test_sg,
+     lambda X: tau_of(sg_cold["members"], X)),
+    ("ray tracing (RTS)", RTGOLD, tau_test_r,
+     lambda X: tau_of(hp["members"], X)),
+]
+groups_f = ("dwarfs", "hot", "flagged")
+fig, ax = plt.subplots(figsize=(FIG_W, 4.0))
+xg = np.arange(len(groups_f))
+for k, (name, col, test_scores, alarm) in enumerate(methods_f):
+    th = np.quantile(test_scores, 0.89)
+    fracs = []
+    for gname in groups_f:
+        Xo = torch.tensor(ood[f"Xs_{gname}"], dtype=torch.float32,
+                          device=H.DEV)
+        fracs.append(100.0 * float((alarm(Xo) > th).mean()))
+    ax.bar(xg + (k - 1.5) * 0.21, fracs, 0.21, color=col, label=name)
+    print(f"   F {name:>18}: " + " ".join(f"{g}={f:.0f}%"
+          for g, f in zip(groups_f, fracs)))
+ax.axhline(11.0, color=SOFTGRAY, ls="--", lw=1.4,
+           label="flag rate on pristine test (11%)")
+ax.set_xticks(xg, ["dwarfs", "hot stars", "survey-flagged"])
+ax.set_ylabel("% of imposters flagged as uncertain")
+ax.set_ylim(0, 108)
+ax.legend(loc="upper left", bbox_to_anchor=(0.0, 1.16), ncol=3,
+          frameon=False, fontsize=F_TICK - 3, columnspacing=0.9,
+          handlelength=1.2)
+save(fig, "exp7_imposters.pdf")

@@ -400,3 +400,12 @@ budget fractions 0.81/1.00/0.22). OOD detection discriminates
 healthy-spread vs collapsed/no-spread posteriors, NOT sampler quality:
 do not claim it as an RTS-vs-SGHMC advantage. RTS's contribution to the
 OOD story is the certificate that its spread is genuine.
+
+Imposter-detection by method (2026-08-07, exp6 slide format, shared 11
+percent budget, each method its own signal): MAP's learned sigma(x)
+FAILS as an alarm: 8 percent on dwarfs (below the pristine flag rate),
+50 on hot; a single network's learned noise does not rise on inputs it
+has never seen. Anything with member spread works: ensemble 89/99/17,
+SGHMC 81/100/22, RTS 81/100/22. Weights for the retrained baselines in
+exp7_map_weights.npz / exp7_ensemble_weights.npz (pod rerun; CUDA
+sibling minima of the Task 1/2 fits).
