@@ -7,23 +7,23 @@ Run from the repo root:
 
     python experiments/exp7_poster_figures.py
 
-The four vector PDFs land in poster_figures/ at the top of the repo.
-Colors and font sizes follow the poster preamble (RTGOLD etc.); edit
-the constants below to restyle. Figure list:
+The seven vector PDFs land in poster_figures/ at the top of the repo,
+every number recomputed from the committed packs (nothing typed in):
 
-Builds four vector PDFs into artifacts/figures/, every number recomputed
-from the committed packs in ../empirical/results/tables (nothing typed in):
+    exp7_ladder.pdf       the overconfidence ladder (z std per claim)
+    exp7_structure.pdf    per-group calibration: MAP / ensemble / SGHMC / RTS
+    exp7_temperature.pdf  SGHMC kinetic temperature vs the true T = 1
+    exp7_tails.pdf        tail stars under each likelihood's own yardstick
+    exp7_predictive.pdf   test RMSE + test NLL across the five methods
+    exp7_mixing.pdf       autocorrelation times, fast vs slowest observable
+    exp7_ood.pdf          OOD flagging at the 11 percent budget (chain of
+                          record; the notebook's section 10 used the older
+                          gated chain, which flagged far less)
 
-    L  exp7_ladder.pdf       the overconfidence ladder (z std per claim)
-    S  exp7_structure.pdf    per-group calibration: MAP / ensemble / chain
-    T  exp7_temperature.pdf  SGHMC kinetic temperature vs the true T = 1
-    Q  exp7_tails.pdf        tail stars under each likelihood's own yardstick
-
-Conventions mirrored from build_figures.py: poster preamble colors, softgray
-spines/ticks, ink labels, top/right spines off, tight vector PDFs, in-figure
-strings sized to read >= 24 pt at the printed 0.82\linewidth width.
-
-Run:  /Users/yasiralsugair/UofT/empirical/.venv/bin/python build_exp7_figures.py
+Colors and font sizes follow the poster preamble (RTGOLD etc.); edit the
+constants below to restyle. Style: softgray spines/ticks, ink labels,
+top/right spines off, tight vector PDFs, in-figure strings sized to read
+>= 24 pt at the printed 0.82\linewidth width.
 """
 import sys
 from pathlib import Path
@@ -342,3 +342,40 @@ fig.suptitle("autocorrelation time, in gradient steps (same batch for all)",
              fontsize=F_TICK, y=1.02)
 fig.tight_layout()
 save(fig, "exp7_mixing.pdf")
+
+# ---- O: out-of-distribution flagging --------------------------------------
+# The exp6 fake-images question with real astronomy: the pristine cut
+# rejected 376k stars, and three classes of them are genuine OOD inputs.
+# The alarm is member disagreement tau, thresholded so it flags 11 percent
+# of pristine held-out stars (the exp6 budget); each OOD group is then
+# measured against that frozen threshold. Computed on the CHAIN OF RECORD
+# (the per-star hetero chain); the notebook's section 10 ran the same test
+# on the older gated chain.
+ood = np.load(TAB / "exp7_ood_payload.npz")
+tau_test = mus_h.std(0)
+thresh = np.quantile(tau_test, 0.89)
+
+ood_rows = [("pristine test", float((tau_test > thresh).mean()), SOFTGRAY)]
+with torch.no_grad():
+    for gname in ("dwarfs", "hot", "flagged"):
+        Xo = torch.tensor(ood[f"Xs_{gname}"], dtype=torch.float32,
+                          device=H.DEV)
+        mus_o = []
+        for st in hp["members"]:
+            H.load_flat(hm, st)
+            mu, _ = hm.mu_r(Xo)
+            mus_o.append(mu.cpu().numpy())
+        tau_o = np.array(mus_o).std(0)
+        ood_rows.append((gname, float((tau_o > thresh).mean()), RTGOLD))
+
+fig, ax = plt.subplots(figsize=(FIG_W, 3.4))
+yoo = np.arange(len(ood_rows))[::-1]
+for yp, (name, frac, col) in zip(yoo, ood_rows):
+    ax.barh(yp, frac, height=0.58, color=col)
+    ax.text(frac + 0.015, yp, f"{frac:.2f}", va="center", fontsize=F_TICK)
+ax.axvline(0.11, color=INK, ls=":", lw=1.2)
+ax.set_yticks(yoo, [r[0] for r in ood_rows])
+ax.set_xlabel("fraction flagged at the 11 percent budget")
+ax.set_xlim(0, 1.0)
+save(fig, "exp7_ood.pdf")
+print("   OOD flagged:", ", ".join(f"{n} {f:.2f}" for n, f, _ in ood_rows))
