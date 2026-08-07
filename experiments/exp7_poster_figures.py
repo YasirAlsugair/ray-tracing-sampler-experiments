@@ -220,3 +220,125 @@ ax.set_ylabel(r"stars past the $|z| = 4$ tail")
 save(fig, "exp7_tails.pdf")
 print(f"   tails: Gaussian {n_gauss}, t {n_t} (nu median "
       f"{np.median(nu_m):.2f}), chance {chance:.1f}")
+
+# ---- P: predictive performance --------------------------------------------
+# Proper scoring: mean negative log predictive density on the held-out
+# stars (lower is better), mixture over members for the sampled methods.
+from scipy.special import logsumexp
+
+DARKGOLD = "#8A5F06"
+LOG2PI = np.log(2 * np.pi)
+
+
+def gauss_mix_nll(mus_m, var_m):
+    """Mean NLL of a mixture of Gaussians over members. var_m includes err."""
+    lp = (-0.5 * (y[None, :] - mus_m) ** 2 / var_m
+          - 0.5 * np.log(var_m) - 0.5 * LOG2PI)
+    return float(-np.mean(logsumexp(lp, axis=0) - np.log(len(mus_m))))
+
+
+mm_var = te**2 + mm["sig"] ** 2
+nll_map = float(np.mean(0.5 * (y - mm["mu"]) ** 2 / mm_var
+                        + 0.5 * np.log(mm_var) + 0.5 * LOG2PI))
+nll_en = gauss_mix_nll(en["mus"], te[None, :] ** 2 + en["sig2s"])
+nll_sg = gauss_mix_nll(mus_sg, te[None, :] ** 2 + sig2_sg)
+nll_ch = gauss_mix_nll(mus_h, te[None, :] ** 2 + sig2_h)
+lp_t = np.stack([sstats.t.logpdf(y, df=nu_m[k], loc=mus_t[k],
+                                 scale=np.sqrt(te**2 + sigs_t[k]**2))
+                 for k in range(len(mus_t))])
+nll_t = float(-np.mean(logsumexp(lp_t, axis=0) - np.log(len(mus_t))))
+
+perf = [
+    ("optimizer (MAP)", float(mm["rmse"]), nll_map, SOFTGRAY),
+    ("deep ensemble", float(np.sqrt(((en["mus"].mean(0) - y)**2).mean())),
+     nll_en, RTBLUE),
+    ("SGHMC (tuned)", float(np.sqrt(((mus_sg.mean(0) - y)**2).mean())),
+     nll_sg, HMCRED),
+    ("RTS, Gaussian", float(np.sqrt(((mu_ch - y)**2).mean())), nll_ch, RTGOLD),
+    ("RTS, Student-t", float(np.sqrt(((mus_t.mean(0) - y)**2).mean())),
+     nll_t, DARKGOLD),
+]
+fig, axes = plt.subplots(1, 2, figsize=(FIG_W, 3.4))
+ypp = np.arange(len(perf))[::-1]
+spans = []
+for col_i in (1, 2):
+    vs = [r[col_i] for r in perf]
+    pad = (max(vs) - min(vs)) * 0.18
+    spans.append((min(vs) - pad, max(vs) + pad * 2.2))
+for ax, col_i, lab, (lo, hi) in ((axes[0], 1, "test RMSE", spans[0]),
+                                 (axes[1], 2, "test NLL (lower is better)",
+                                  spans[1])):
+    vals = [r[col_i] for r in perf]
+    ax.barh(ypp, np.array(vals) - lo, left=lo, height=0.58,
+            color=[r[3] for r in perf])
+    for yp, v in zip(ypp, vals):
+        ax.text(v + (hi - lo) * 0.02, yp, f"{v:.4f}" if col_i == 1
+                else f"{v:.3f}", va="center", fontsize=F_TICK - 2)
+    ax.set_xlim(lo, hi)
+    ax.set_xlabel(lab)
+axes[0].set_yticks(ypp, [r[0] for r in perf], fontsize=F_TICK - 1)
+axes[1].set_yticks([])
+fig.tight_layout()
+save(fig, "exp7_predictive.pdf")
+for name, rmse, nll, _ in perf:
+    print(f"   {name:>16}: RMSE {rmse:.4f}  NLL {nll:.3f}")
+
+# ---- M: mixing, integrated autocorrelation of the exact misfit -------------
+def iat_steps(series, cadence=250):
+    """Sokal-windowed integrated autocorrelation time, in sampler steps."""
+    x = np.asarray(series, float)
+    x = x - x.mean()
+    n = len(x)
+    acf = np.correlate(x, x, "full")[n - 1:] / (x.var() * n)
+    tau = 1.0
+    for w in range(1, n // 3):
+        tau = 1.0 + 2.0 * np.sum(acf[1:w + 1])
+        if w >= 5 * tau:
+            break
+    return tau * cadence, acf
+
+
+# Stationary stretches only: the RT chain's batch-4096 span before the
+# NaN episode; SGHMC after its burn-in descent; the t chain's final half.
+# The fast observable (misfit) rewards jitter, so the honest mixing
+# number is the SLOWEST observable: the weighted norm. The RT taus there
+# are window-limited estimates (span only ~3 tau); SGHMC's weighted norm
+# still trends at 2M steps (drift 3.4x scatter), so its slow-direction
+# mixing time is a hard lower bound, not an estimate.
+tpk = np.load(TAB / "exp7t_pack_final.npz")
+rows_m = [
+    ("RTS, Gaussian", hp["misfit"][48_000:62_800],
+     hp["wnorm"][48_000:62_800], RTGOLD, None),
+    ("RTS, Student-t", tpk["misfit"][len(tpk["misfit"]) // 2:],
+     tpk["wnorm"][len(tpk["wnorm"]) // 2:], DARKGOLD, None),
+    ("SGHMC (tuned)", cold["misfit"][2_000:], None, HMCRED, 2e6),
+]
+fig, axes = plt.subplots(1, 2, figsize=(FIG_W, 3.2))
+ymm = np.arange(len(rows_m))[::-1]
+for yp, (name, fast, slow, col, bound) in zip(ymm, rows_m):
+    tf, _ = iat_steps(fast)
+    axes[0].barh(yp, tf, height=0.55, color=col)
+    axes[0].text(tf * 1.25, yp, f"{tf/1e3:.1f}k" if tf < 1e4
+                 else f"{tf/1e3:.0f}k", va="center", fontsize=F_TICK - 2)
+    if slow is not None:
+        ts, _ = iat_steps(slow)
+        axes[1].barh(yp, ts, height=0.55, color=col)
+        axes[1].text(ts * 1.22, yp, f"~{ts/1e6:.1f}M", va="center",
+                     fontsize=F_TICK - 2)
+    else:
+        axes[1].barh(yp, bound, height=0.55, color=col, alpha=0.45,
+                     hatch="//", edgecolor=col)
+        axes[1].text(bound * 1.22, yp, "> 2M, never\nequilibrated",
+                     va="center", fontsize=F_TICK - 3)
+for ax, lab in ((axes[0], "misfit (fast)"),
+                (axes[1], "weighted norm (slowest)")):
+    ax.set_xscale("log")
+    ax.set_title(lab, fontsize=F_LABEL - 1)
+axes[0].set_xlim(2e2, 3e5)
+axes[1].set_xlim(2e5, 6e7)
+axes[0].set_yticks(ymm, [r[0] for r in rows_m], fontsize=F_TICK - 1)
+axes[1].set_yticks([])
+fig.suptitle("autocorrelation time, in gradient steps (same batch for all)",
+             fontsize=F_TICK, y=1.02)
+fig.tight_layout()
+save(fig, "exp7_mixing.pdf")
