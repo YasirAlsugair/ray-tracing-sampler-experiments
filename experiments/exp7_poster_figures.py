@@ -500,3 +500,53 @@ ax.set_xlim(0, 1)
 ax.set_ylim(0, 1.02)
 ax.legend(loc="center right", frameon=False)
 save(fig, "exp7_ood_roc.pdf")
+
+# ---- K: test NLL vs number of members averaged -----------------------------
+# The exp6-style curve: how much the predictive improves as members are
+# averaged. Per-member log-densities are precomputed once; a K-member
+# mixture is then a logsumexp over any subset. Bands: std over 25 random
+# subsets. The MAP line is the memberless floor.
+def member_logpdfs_gauss(mus_m, var_m):
+    return (-0.5 * (y[None, :] - mus_m) ** 2 / var_m
+            - 0.5 * np.log(var_m) - 0.5 * LOG2PI)
+
+
+lp_sets = [
+    ("RTS, Gaussian", member_logpdfs_gauss(mus_h, te[None, :]**2 + sig2_h),
+     RTGOLD),
+    ("RTS, Student-t", np.stack([
+        sstats.t.logpdf(y, df=nu_m[k], loc=mus_t[k],
+                        scale=np.sqrt(te**2 + sigs_t[k]**2))
+        for k in range(len(mus_t))]), DARKGOLD),
+    ("SGHMC (tuned)", member_logpdfs_gauss(mus_sg, te[None, :]**2 + sig2_sg),
+     HMCRED),
+    ("deep ensemble", member_logpdfs_gauss(en["mus"],
+                                           te[None, :]**2 + en["sig2s"]),
+     RTBLUE),
+]
+rng_k = np.random.default_rng(7)
+fig, ax = plt.subplots(figsize=(FIG_W, 4.0))
+for name, lp, col in lp_sets:
+    M = len(lp)
+    ks = [k for k in (1, 2, 3, 5, 7, 10, 15, 20, 30, 40, 50) if k <= M]
+    mean_k, lo_k, hi_k = [], [], []
+    for k in ks:
+        vals = []
+        for _ in range(25):
+            sub = rng_k.choice(M, size=k, replace=False)
+            vals.append(-np.mean(logsumexp(lp[sub], axis=0) - np.log(k)))
+        vals = np.array(vals)
+        mean_k.append(vals.mean())
+        lo_k.append(vals.mean() - vals.std())
+        hi_k.append(vals.mean() + vals.std())
+    ax.plot(ks, mean_k, "-o", color=col, lw=2.0, ms=5, label=name)
+    ax.fill_between(ks, lo_k, hi_k, color=col, alpha=0.18, lw=0)
+ax.axhline(nll_map, color=SOFTGRAY, ls="--", lw=1.4)
+ax.text(1.02, nll_map + 0.004, "point estimate (MAP)", fontsize=F_TICK - 2,
+        color=SOFTGRAY, va="bottom")
+ax.set_xscale("log")
+ax.set_xticks([1, 2, 5, 10, 20, 50], ["1", "2", "5", "10", "20", "50"])
+ax.set_xlabel("number of members averaged")
+ax.set_ylabel("test NLL (lower is better)")
+ax.legend(frameon=False, loc="upper right")
+save(fig, "exp7_members.pdf")
