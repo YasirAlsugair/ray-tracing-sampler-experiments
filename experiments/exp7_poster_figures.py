@@ -50,6 +50,26 @@ HMCRED = "#D1495B"
 SOFTGRAY = "#8A8D99"
 INK = "#20222B"
 
+# Method palette (Okabe-Ito), the single source of truth for
+# method-comparison figures; import/copy this dict rather than redefining.
+# Gray recedes (non-Bayesian baseline), the two blues are one family
+# (approximate-Bayesian baselines, light to dark), vermillion is the only
+# warm hue: RTS is our method and must pop.
+COLORS = {
+    # #A0A0A0 failed the grayscale check (luma 160 vs the light blue's
+    # 158); darkened per the fallback rule to keep MAP separable in print
+    "point (MAP)": "#8A8A8A",
+    "deep ensemble": "#56B4E9",
+    "SGHMC (tuned)": "#0072B2",
+    "ray tracing (RTS)": "#D55E00",
+}
+
+
+def _darken(hex_color, factor=0.75):
+    """The bar-edge rule: the face color with each RGB channel x factor."""
+    import matplotlib.colors as mcolors
+    return tuple(c * factor for c in mcolors.to_rgb(hex_color))
+
 FIG_W = 7.4
 F_TICK, F_LABEL = 15, 16
 plt.rcParams.update({
@@ -580,33 +600,50 @@ map_test = sig_of(hm, Xs)
 ens_test = tau_of(ew["states"], Xs)
 
 methods_f = [
-    ("point (MAP)", SOFTGRAY, map_test,
+    ("point (MAP)", map_test,
      lambda X: (H.load_flat(hm, mw["state"]), sig_of(hm, X))[1]),
-    ("deep ensemble", RTBLUE, ens_test, lambda X: tau_of(ew["states"], X)),
-    ("SGHMC (tuned)", HMCRED, tau_test_sg,
+    ("deep ensemble", ens_test, lambda X: tau_of(ew["states"], X)),
+    ("SGHMC (tuned)", tau_test_sg,
      lambda X: tau_of(sg_cold["members"], X)),
-    ("ray tracing (RTS)", RTGOLD, tau_test_r,
+    ("ray tracing (RTS)", tau_test_r,
      lambda X: tau_of(hp["members"], X)),
 ]
 groups_f = ("dwarfs", "hot", "flagged")
+FTEXT = "#333333"
 fig, ax = plt.subplots(figsize=(FIG_W, 4.0))
 xg = np.arange(len(groups_f))
-for k, (name, col, test_scores, alarm) in enumerate(methods_f):
+ax.grid(axis="y", color="black", alpha=0.12, lw=0.5, zorder=0)
+for k, (name, test_scores, alarm) in enumerate(methods_f):
     th = np.quantile(test_scores, 0.89)
     fracs = []
     for gname in groups_f:
         Xo = torch.tensor(ood[f"Xs_{gname}"], dtype=torch.float32,
                           device=H.DEV)
         fracs.append(100.0 * float((alarm(Xo) > th).mean()))
-    ax.bar(xg + (k - 1.5) * 0.21, fracs, 0.21, color=col, label=name)
+    ax.bar(xg + (k - 1.5) * 0.21, fracs, 0.21, color=COLORS[name],
+           edgecolor=_darken(COLORS[name]), linewidth=0.6, zorder=3,
+           label=name)
     print(f"   F {name:>18}: " + " ".join(f"{g}={f:.0f}%"
           for g, f in zip(groups_f, fracs)))
-ax.axhline(11.0, color=SOFTGRAY, ls="--", lw=1.4,
+ax.axhline(11.0, color="#666666", ls=(0, (4, 3)), lw=0.9, zorder=4,
            label="flag rate on pristine test (11%)")
 ax.set_xticks(xg, ["dwarfs", "hot stars", "survey-flagged"])
 ax.set_ylabel("% of imposters flagged as uncertain")
 ax.set_ylim(0, 108)
-ax.legend(loc="upper left", bbox_to_anchor=(0.0, 1.16), ncol=3,
-          frameon=False, fontsize=F_TICK - 3, columnspacing=0.9,
-          handlelength=1.2)
+for spine in ("left", "bottom"):
+    ax.spines[spine].set_color(FTEXT)
+ax.tick_params(colors=FTEXT)
+ax.yaxis.label.set_color(FTEXT)
+for tick in ax.get_xticklabels() + ax.get_yticklabels():
+    tick.set_color(FTEXT)
+handles_f, labels_f = ax.get_legend_handles_labels()
+order_f = [labels_f.index(n) for n in list(COLORS) +
+           ["flag rate on pristine test (11%)"]]
+leg = ax.legend([handles_f[i] for i in order_f],
+                [labels_f[i] for i in order_f],
+                loc="upper left", bbox_to_anchor=(0.0, 1.16), ncol=3,
+                frameon=False, fontsize=F_TICK - 3, columnspacing=0.9,
+                handlelength=1.2)
+for text in leg.get_texts():
+    text.set_color(FTEXT)
 save(fig, "exp7_imposters.pdf")
