@@ -343,39 +343,57 @@ fig.suptitle("autocorrelation time, in gradient steps (same batch for all)",
 fig.tight_layout()
 save(fig, "exp7_mixing.pdf")
 
-# ---- O: out-of-distribution flagging --------------------------------------
-# The exp6 fake-images question with real astronomy: the pristine cut
-# rejected 376k stars, and three classes of them are genuine OOD inputs.
-# The alarm is member disagreement tau, thresholded so it flags 11 percent
-# of pristine held-out stars (the exp6 budget); each OOD group is then
-# measured against that frozen threshold. Computed on the CHAIN OF RECORD
-# (the per-star hetero chain); the notebook's section 10 ran the same test
-# on the older gated chain.
+# ---- O: out-of-distribution flagging, old chain vs chain of record --------
+# The exp6 fake-images question with real astronomy: three classes of stars
+# the pristine cut rejected are genuine OOD inputs. The alarm is member
+# disagreement tau, thresholded to flag 11 percent of pristine held-out
+# stars (the exp6 budget), each chain against its own threshold. The gated
+# first-likelihood chain's spread was collapsed by its over-soft gate; the
+# converged per-star chain's spread is genuine, and the same honesty that
+# calibrates the labels is what powers the alarm.
+import exp7_gaia_driver as D
+
 ood = np.load(TAB / "exp7_ood_payload.npz")
-tau_test = mus_h.std(0)
-thresh = np.quantile(tau_test, 0.89)
+gm = np.load(TAB / "exp7_gated5e6_members.npz")["members"]
+old_model = D.make_model()
 
-ood_rows = [("pristine test", float((tau_test > thresh).mean()), SOFTGRAY)]
-with torch.no_grad():
-    for gname in ("dwarfs", "hot", "flagged"):
-        Xo = torch.tensor(ood[f"Xs_{gname}"], dtype=torch.float32,
-                          device=H.DEV)
-        mus_o = []
-        for st in hp["members"]:
-            H.load_flat(hm, st)
-            mu, _ = hm.mu_r(Xo)
-            mus_o.append(mu.cpu().numpy())
-        tau_o = np.array(mus_o).std(0)
-        ood_rows.append((gname, float((tau_o > thresh).mean()), RTGOLD))
+def group_fracs(members, model, mu_of, tau_test):
+    th = np.quantile(tau_test, 0.89)
+    fr = {"pristine test": float((tau_test > th).mean())}
+    with torch.no_grad():
+        for gname in ("dwarfs", "hot", "flagged"):
+            Xo = torch.tensor(ood[f"Xs_{gname}"], dtype=torch.float32,
+                              device=H.DEV)
+            mus_o = []
+            for st in members:
+                H.load_flat(model, st)
+                mus_o.append(mu_of(model, Xo).cpu().numpy())
+            fr[gname] = float((np.array(mus_o).std(0) > th).mean())
+    return fr
 
-fig, ax = plt.subplots(figsize=(FIG_W, 3.4))
-yoo = np.arange(len(ood_rows))[::-1]
-for yp, (name, frac, col) in zip(yoo, ood_rows):
-    ax.barh(yp, frac, height=0.58, color=col)
-    ax.text(frac + 0.015, yp, f"{frac:.2f}", va="center", fontsize=F_TICK)
+fr_old = group_fracs(gm, old_model,
+                     lambda m, X: m(X).squeeze(-1), tau10)
+fr_new = group_fracs(hp["members"], hm,
+                     lambda m, X: m.mu_r(X)[0], mus_h.std(0))
+
+names = ["pristine test", "dwarfs", "hot", "flagged"]
+fig, ax = plt.subplots(figsize=(FIG_W, 3.8))
+yoo = np.arange(len(names))[::-1]
+for off, fr, col, lab in ((0.19, fr_old, SOFTGRAY,
+                           "first chain (spread collapsed by the gate)"),
+                          (-0.19, fr_new, RTGOLD,
+                           "chain of record (honest spread)")):
+    for yp, n in zip(yoo, names):
+        ax.barh(yp + off, fr[n], height=0.36, color=col,
+                label=lab if yp == yoo[0] else None)
+        ax.text(fr[n] + 0.015, yp + off, f"{fr[n]:.2f}", va="center",
+                fontsize=F_TICK - 2)
 ax.axvline(0.11, color=INK, ls=":", lw=1.2)
-ax.set_yticks(yoo, [r[0] for r in ood_rows])
+ax.set_yticks(yoo, names)
 ax.set_xlabel("fraction flagged at the 11 percent budget")
-ax.set_xlim(0, 1.0)
+ax.set_xlim(0, 1.12)
+ax.legend(loc="lower left", bbox_to_anchor=(0.0, 1.0), frameon=False,
+          fontsize=F_TICK - 2)
 save(fig, "exp7_ood.pdf")
-print("   OOD flagged:", ", ".join(f"{n} {f:.2f}" for n, f, _ in ood_rows))
+print("   OOD old ", {k: round(v, 2) for k, v in fr_old.items()})
+print("   OOD new ", {k: round(v, 2) for k, v in fr_new.items()})
