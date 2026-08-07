@@ -468,17 +468,35 @@ with torch.no_grad():
             mus_o.append(mu.cpu().numpy())
         ood_taus[gname] = np.array(mus_o).std(0)
 
+# SGHMC overlay: its alarm is indistinguishable (AUC within 0.006), the
+# honest exhibit that OOD detection tests spread, not sampler quality
+tau_test_sg = mus_sg.std(0)
+ood_taus_sg = {}
+with torch.no_grad():
+    for gname in ("dwarfs", "hot", "flagged"):
+        Xo = torch.tensor(ood[f"Xs_{gname}"], dtype=torch.float32,
+                          device=H.DEV)
+        mus_o = []
+        for st in sg_cold["members"]:
+            H.load_flat(hm, st)
+            mus_o.append(hm.mu_r(Xo)[0].cpu().numpy())
+        ood_taus_sg[gname] = np.array(mus_o).std(0)
+
 fig, ax = plt.subplots(figsize=(FIG_W * 0.62, 4.2))
 for gname, col in (("hot", DARKGOLD), ("dwarfs", RTGOLD),
                    ("flagged", SOFTGRAY)):
     fp, tp, auc = roc(ood_taus[gname], tau_test_r)
     ax.plot(fp, tp, color=col, lw=2.0, label=f"{gname}  AUC {auc:.2f}")
+    fp2, tp2, _ = roc(ood_taus_sg[gname], tau_test_sg)
+    ax.plot(fp2, tp2, color=col, lw=1.4, ls="--")
     op = float((ood_taus[gname] > thresh_r).mean())
     ax.plot([0.11], [op], "o", color=col, ms=8, mec=INK, mew=0.8)
 ax.plot([0, 1], [0, 1], ls=":", color=INK, lw=1.2)
+ax.text(0.42, 0.06, "solid: RTS\ndashed: SGHMC (same alarm)",
+        fontsize=F_TICK - 2, color=INK)
 ax.set_xlabel("false alarms (pristine flagged)")
 ax.set_ylabel("caught (OOD flagged)")
 ax.set_xlim(0, 1)
 ax.set_ylim(0, 1.02)
-ax.legend(loc="lower right", frameon=False)
+ax.legend(loc="center right", frameon=False)
 save(fig, "exp7_ood_roc.pdf")
