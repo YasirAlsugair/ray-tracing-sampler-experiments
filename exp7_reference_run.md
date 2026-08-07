@@ -392,3 +392,11 @@ the symmetric poster figure. Verdict unchanged and strengthened: boiling
 the entire run (final-quarter kinetic temp 2.88, excursions past 100),
 misfit ending 14.5k nats above the posterior. exp7sg_fr30_pack.npz now
 carries the 2M traces. Pod exp7-student-t-2 STOPPED; campaign closed.
+
+OOD equivalence note (2026-08-07, measured): the SGHMC tuned arm's tau
+alarm is statistically indistinguishable from the RTS chain's on all
+three OOD groups (AUC 0.926/0.997/0.587 vs 0.932/0.998/0.588; identical
+budget fractions 0.81/1.00/0.22). OOD detection discriminates
+healthy-spread vs collapsed/no-spread posteriors, NOT sampler quality:
+do not claim it as an RTS-vs-SGHMC advantage. RTS's contribution to the
+OOD story is the certificate that its spread is genuine.
