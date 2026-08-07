@@ -7,7 +7,7 @@ Run from the repo root:
 
     python experiments/exp7_poster_figures.py
 
-The seven vector PDFs land in poster_figures/ at the top of the repo,
+The twelve vector PDFs land in poster_figures/ at the top of the repo,
 every number recomputed from the committed packs (nothing typed in):
 
     exp7_ladder.pdf       the overconfidence ladder (z std per claim)
@@ -19,6 +19,12 @@ every number recomputed from the committed packs (nothing typed in):
     exp7_ood.pdf          OOD flagging at the 11 percent budget (chain of
                           record; the notebook's section 10 used the older
                           gated chain, which flagged far less)
+    exp7_reliability.pdf  coverage (reliability) diagram, all methods
+    exp7_ood_roc.pdf      OOD ROC curves with AUC, the literature's currency
+    exp7_members.pdf      test NLL vs number of members averaged
+    exp7_imposters.pdf    imposter flagging, one bar group per population
+    exp7_convergence.pdf  two-panel convergence certificate for the chain
+                          of record (weight norm vs prior shell + misfit)
 
 Colors and font sizes follow the poster preamble (RTGOLD etc.); edit the
 constants below to restyle. Style: softgray spines/ticks, ink labels,
@@ -647,3 +653,57 @@ leg = ax.legend([handles_f[i] for i in order_f],
 for text in leg.get_texts():
     text.set_color(FTEXT)
 save(fig, "exp7_imposters.pdf")
+
+
+# ---- V: convergence certificate, the two-panel format from the exp6 deck ---
+# The Gaussian chain of record (pack3) from its warm start. Both panels
+# stop at snapshot 62,650 (15.66M steps): the recorded non-finite-window
+# episode's misfit jitter starts at snapshot 62,655 (the full excursion
+# at 62,824), the same era section M excludes from its stationary
+# stretch, and whose tail drags wnorm down (why final_state was ruled
+# unusable for seeding). State the cut in the caption. wnorm is
+# prior-scaled (||theta/sigma_prior||^2), so the prior shell is exactly
+# D; this posterior settles near 2.1x the shell, i.e. the data pulls the
+# weights beyond the prior scale.
+from scipy.ndimage import median_filter
+
+D_h = hp["members"].shape[1]
+CUT_V = 62_650
+m_h, w_h = hp["misfit"][:CUT_V], hp["wnorm"][:CUT_V]
+assert m_h[-2_000:].max() < -180_000, "episode leaked past the cut"
+steps_h = np.arange(len(m_h)) * 250 / 1e6
+w_settle = float(np.median(w_h[-12_000:]))
+m_settle = float(np.median(m_h[-12_000:]))
+m_med = median_filter(m_h, size=401, mode="nearest") / 1e3
+print(f"   V wnorm settles {w_settle:,.0f} ({w_settle/D_h:.2f}x shell "
+      f"D={D_h:,}), misfit settles {m_settle:,.0f}")
+
+fig, axes = plt.subplots(1, 2, figsize=(FIG_W, 3.2))
+axes[0].plot(steps_h, w_h / 1e3, color=RTGOLD, lw=1.4, label="RTS chain")
+axes[0].axhline(D_h / 1e3, color="#666666", ls=(0, (4, 3)), lw=0.9,
+                label=f"prior shell, D = {D_h:,}")
+axes[0].axhline(w_settle / 1e3, color="#666666", ls=":", lw=0.9,
+                label=f"levels near {w_settle/1e3:,.1f}k")
+axes[0].set_ylabel(r"$\|\theta/\sigma_{\mathrm{prior}}\|^2$  ($10^3$)")
+axes[0].set_ylim(10, 27)
+axes[0].legend(loc="lower right", frameon=True, facecolor="white",
+               edgecolor=SOFTGRAY, framealpha=1.0, fontsize=F_TICK - 3,
+               handlelength=1.4)
+axes[0].set_title("Squared weight norm", fontsize=F_LABEL - 1)
+
+axes[1].plot(steps_h, m_h / 1e3, color=RTGOLD, lw=0.5, alpha=0.28)
+axes[1].plot(steps_h, m_med, color=RTGOLD, lw=1.6,
+             label="RTS chain, running median")
+axes[1].axhline(m_settle / 1e3, color="#666666", ls=":", lw=0.9,
+                label=f"settles at {m_settle/1e3:,.1f}k")
+axes[1].set_ylim(-211, -168)
+axes[1].set_ylabel(r"$10^3$ nats")
+axes[1].legend(loc="upper right", frameon=True, facecolor="white",
+               edgecolor=SOFTGRAY, framealpha=1.0, fontsize=F_TICK - 4,
+               handlelength=1.0, borderpad=0.3, handletextpad=0.5)
+axes[1].set_title(r"Training misfit, $-\sum \ln L$", fontsize=F_LABEL - 1)
+
+for ax in axes:
+    ax.set_xlabel("minibatch steps (millions)")
+fig.tight_layout()
+save(fig, "exp7_convergence.pdf")
