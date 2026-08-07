@@ -386,3 +386,9 @@ and slightly better point accuracy; the remaining ~5-10 percent width
 tightness is shared with the Gaussian chain and is the next open item
 (candidates: the gate ceiling's residual bias, or richer sigma(x)).
 Campaign: 8.5M steps, one termination survived, ~$25 of pod time.
+
+Heated-arm extension (2026-08-07): the fr=30 arm re-run to 2M steps for
+the symmetric poster figure. Verdict unchanged and strengthened: boiling
+the entire run (final-quarter kinetic temp 2.88, excursions past 100),
+misfit ending 14.5k nats above the posterior. exp7sg_fr30_pack.npz now
+carries the 2M traces. Pod exp7-student-t-2 STOPPED; campaign closed.
