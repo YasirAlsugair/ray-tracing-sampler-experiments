@@ -1,0 +1,373 @@
+% SUDS Showcase poster, August 14, 2026
+% 4 ft x 3 ft landscape (121.92 cm x 91.44 cm), beamerposter.
+% Build:  cd poster_v2 && pdflatex suds_poster_v4.tex
+% Figures: cd poster_v2 && ../empirical/.venv/bin/python build_figures.py
+%
+\newcommand{\AuthorOne}{Yasir Alsugair}
+\newcommand{\AuthorTwo}{Chuxuan Ai}
+\newcommand{\ProjectName}{Hamiltonian Optimization and Sampling for Deep Learning}
+
+\documentclass[final]{beamer}
+\usepackage[size=custom,width=121.92,height=91.44,scale=1.32]{beamerposter}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+% big operators come from the extension font at its 10pt design size, so without
+% this \int and \sum stay small while everything else scales up to poster size
+\usepackage{exscale}
+\renewcommand{\familydefault}{\sfdefault}
+% beamer's default sans math has no sans Greek, so it silently mixes a serif
+% theta into sans variables. One serif math family throughout instead.
+\usefonttheme[onlymath]{serif}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{qrcode}
+\graphicspath{{artifacts/figures/}{figures/}}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamersize{text margin left=2.5cm, text margin right=2.5cm}
+
+\definecolor{uoftblue}{HTML}{002A5C}
+\definecolor{inktext}{HTML}{20222B}
+\definecolor{panelbg}{HTML}{F4F5F8}
+\definecolor{softgray}{HTML}{8A8D99}
+\definecolor{rtgold}{HTML}{D99A1B}
+\definecolor{rtblue}{HTML}{1F6FB4}
+\definecolor{hmcred}{HTML}{D1495B}
+
+% gold accent rule marking the load-bearing panels
+\newcommand{\dd}{\mathrm{d}}
+
+\newcommand{\keyrule}{\textcolor{rtgold}{\rule{\linewidth}{2mm}}\\[0.5ex]}
+
+% boxed key equations: \boxed inherits \fboxsep, whose 3pt default crowds a tall
+% fraction against the rule at poster scale
+\newcommand{\eqbox}[1]{{\setlength{\fboxsep}{9pt}\boxed{#1}}}
+
+% Header band shares its outer edges with the block bars below, which run
+% \bandmargin .. \paperwidth-\bandmargin on this geometry. Both the band and
+% \linewidth are centred on the paper, so centring a \bandwidth box inside
+% \linewidth lands on those edges without depending on beamer's column widths.
+\newlength{\bandmargin}\setlength{\bandmargin}{2.13cm}
+\newlength{\bandwidth}\setlength{\bandwidth}{\paperwidth}
+\addtolength{\bandwidth}{-2\bandmargin}
+\newcommand{\bandrule}{%
+  \noindent\hbox to \linewidth{\hss
+    \textcolor{uoftblue}{\rule{\bandwidth}{1.8mm}}%
+  \hss}}
+
+% Three logos on one line. The band gets an explicit height so what follows it
+% does not depend on how deep the centred title box happens to be, and the
+% flanking logo groups are set in zero-width boxes so the title stays centred on
+% the paper whatever those groups measure.
+\newlength{\bandheight}\setlength{\bandheight}{7.6cm}
+\newcommand{\headerband}[1]{%
+  \noindent\hbox to \linewidth{\hss
+    \begin{minipage}[c][\bandheight][c]{\bandwidth}\leavevmode#1\end{minipage}%
+  \hss}}
+
+\setbeamercolor{normal text}{fg=inktext}
+\setbeamercolor{block title}{fg=white,bg=uoftblue}
+\setbeamercolor{block body}{fg=inktext,bg=panelbg}
+\setbeamerfont{block title}{size=\Large,series=\bfseries}
+\setbeamercolor{itemize item}{fg=uoftblue}
+
+\setbeamertemplate{block begin}{%
+  \begin{beamercolorbox}[ht=3.6ex,dp=1.2ex,leftskip=1.2ex]{block title}%
+    \usebeamerfont*{block title}\insertblocktitle
+  \end{beamercolorbox}%
+  \nointerlineskip
+  \begin{beamercolorbox}[leftskip=1.2ex,rightskip=1.2ex,vmode]{block body}%
+    \vspace{0.9ex}\raggedright
+    \setlength{\parskip}{0.21\baselineskip}\setlength{\parindent}{0pt}
+}
+\setbeamertemplate{block end}{%
+  \vspace{0.9ex}\end{beamercolorbox}\vspace{0.24cm}
+}
+
+% centre a logo on the current baseline, so logos of unequal height sitting side
+% by side align on their middles rather than their bottoms
+\newcommand{\vlogo}[1]{\raisebox{-0.5\height}{#1}}
+
+% a logo, or a labeled placeholder box if the file is missing
+\newcommand{\logoslot}[4]{% file, label, height, placeholder width
+  \IfFileExists{figures/#1}%
+    {\includegraphics[height=#3]{#1}}%
+    {\fcolorbox{softgray}{white}{\parbox[c][#3][c]{#4}{\centering
+       \textcolor{softgray}{\small #2\\ {\tiny drop \texttt{\detokenize{figures/#1}}}}}}}}
+
+% same idea for figures: a labeled placeholder rather than a failed build
+\newcommand{\figslot}[3]{% file, width fraction, label
+  \IfFileExists{artifacts/figures/#1}%
+    {\includegraphics[width=#2\linewidth]{#1}}%
+    {\IfFileExists{figures/#1}%
+      {\includegraphics[width=#2\linewidth]{#1}}%
+      {\fcolorbox{softgray}{white}{\parbox[c][6cm][c]{#2\linewidth}{\centering
+         \textcolor{softgray}{\small #3\\ {\tiny missing \texttt{\detokenize{#1}}}}}}}}}
+
+\begin{document}
+\begin{frame}[t]
+
+% ---------------- header band ----------------
+% top margin matched to the 2.13 cm side margin
+\vspace{2.0cm}
+\headerband{%
+  \rlap{\vlogo{\logoslot{dept_logo_trim.png}{U of T Statistical Sciences signature}{3.75cm}{12cm}}}%
+  \parbox[c]{\bandwidth}{\centering
+    {\textcolor{uoftblue}{\textbf{\LARGE Toward Scalable Bayesian Uncertainty for Machine Learning\\[0.2ex] with the Ray Tracing Sampler}}}\\[0.25cm]
+    {\Large \AuthorOne{} \qquad \AuthorTwo}\\[0.18cm]
+    {\large Supervisors: Prof.\ Joshua Speagle and Prof.\ Ricardo Baptista}}%
+  \llap{%
+    \vlogo{\logoslot{dsi_logo_standalone.png}{Data Sciences Institute logo}{2.5cm}{12cm}}%
+    \hspace{3.0cm}%
+    \vlogo{\logoslot{kaust_academy_logo_trim.png}{KAUST Academy logo}{6.0cm}{12cm}}}%
+}
+\vspace{0.22cm}
+\bandrule
+\vspace{0.18cm}
+
+% ---------------- three columns ----------------
+\begin{columns}[t]
+
+% ============ column 1: why sample, where it lives, how you draw ============
+\begin{column}{0.31\paperwidth}
+
+\begin{block}{Why sample a neural network?}
+\begin{center}
+\figslot{fig0_data_bands.pdf}{0.60}{posterior draws vs one Adam fit}
+\end{center}
+\vspace{0.1cm}
+\textbf{Ordinary training:} one set of weights $\rightarrow$ one function.\\
+\textbf{Bayesian sampling:} a distribution over weights $\rightarrow$ uncertainty
+over functions.
+\vspace{-0.15cm}
+\[
+  \pi(w) \;=\; p(w \mid \mathcal{D}) \;\propto\;
+  \underbrace{p(\mathcal{D} \mid w)}_{\text{fit}}\;
+  \underbrace{p(w)}_{\text{prior}}
+\]
+\vspace{-0.45cm}
+
+Every gold curve fits the data we have. They only disagree out in the shaded
+gaps, and that disagreement is the uncertainty we are after.
+\end{block}
+
+\begin{block}{Where the probability lives}
+\vspace{-0.15cm}
+\[
+  \mathbb{E}[f] \;=\; \int f(\theta)\, p(\theta)\, \mathrm{d}\theta
+  \;=\; \int f(r)\, \textcolor{rtblue}{p(r)}\,
+        \textcolor{rtgold}{r^{D-1}}\, \mathrm{d}r
+\]
+\begin{center}
+\figslot{typical_set.pdf}{0.98}{density $\times$ volume, and the shell at $D=100$}
+\end{center}
+\vspace{0.1cm}
+\textcolor{rtblue}{\textbf{Density}} peaks at the mode.
+\textcolor{rtgold}{\textbf{Volume}} grows as $r^{D-1}$, for $D$ parameters.\\
+Their product is the \emph{typical set}: a thin shell at
+$\|\theta\|^2 \approx D$, relative width $\sqrt{2/D}$.
+
+A sampler has to stay on that shell. If something quietly adds energy the chain
+drifts outward, and none of the usual convergence diagnostics complain.
+\end{block}
+
+\begin{block}{MCMC in the era of big data}
+You cannot draw from $\pi$ directly. A chain can end up there:
+\vspace{-0.2cm}
+\[
+  w^{(0)} \rightarrow w^{(1)} \rightarrow \cdots \rightarrow w^{(M)},
+  \qquad \{w^{(m)}\}_{m \gg 0} \sim \pi .
+\]
+\vspace{-0.5cm}
+
+Gradient samplers steer by $\nabla \ln \pi$; Hamiltonian Monte Carlo (HMC) is
+the standard one. Computed exactly, every step reads the whole dataset:
+\vspace{-0.2cm}
+\[
+  \nabla \ln \pi(w) = \sum_{i=1}^{N} \nabla \ln p(y_i \mid w) + \nabla \ln p(w).
+\]
+\vspace{-0.5cm}
+
+A minibatch $B \ll N$ is the standard fix:
+\vspace{-0.2cm}
+\[
+  \begin{aligned}
+  \hat{g}_B &= \tfrac{N}{B}\textstyle\sum_{i \in B}
+               \nabla \ln p(y_i \mid w) + \nabla \ln p(w),\\[2pt]
+  \mathbb{E}[\hat{g}_B] &= \nabla \ln \pi(w),
+    \qquad \operatorname{Cov}[\hat{g}_B] \propto 1/B .
+  \end{aligned}
+\]
+\vspace{-0.45cm}
+
+The mini-batch gradient is unbiased, but no individual step ever uses the right
+one. How much that per-step error costs you is what we set out to measure.
+\end{block}
+
+\end{column}
+
+% ===================== middle column =====================
+\begin{column}{0.31\paperwidth}
+
+\begin{block}{Why ray tracing tolerates noisy gradients}
+
+\textbf{1.\ Noise speeds HMC up. It only rotates a ray.}
+
+\textbf{HMC} adds the gradient onto its velocity. A random push lengthens that
+velocity whichever way it points, and nothing takes the energy back: the chain
+heats up, drifts \emph{outward} off the shell, and its error bars come out too wide.
+
+\textbf{Ray tracing} treats the posterior as an optical medium. Setting the
+refractive index to \(n(\theta)=\pi(\theta)^{1/(D-1)}\) makes rays bend toward
+higher probability. The sampler carries a \emph{unit} direction of travel \(u\),
+and the gradient error enters as \(\sigma\zeta\):
+\vspace{-0.03cm}
+\[
+    \eqbox{\;
+    \frac{\dd u}{\dd s}
+    = P_u\,\bigg(\nabla \ln n(\theta) + \frac{\sigma}{D-1}\,\zeta \bigg),
+    \qquad
+    P_u = I - uu^\top . \;}
+\]
+\vspace{-0.45cm}
+
+Both act only in the tangent plane, so they can only rotate \(u\) on the
+constant-speed sphere.
+
+\vspace{0.08cm}
+\begin{center}
+\figslot{fig2_noise_geometry.pdf}{0.50}{HMC heating versus RT rotation}
+\end{center}
+
+\vspace{0.04cm}
+
+\textbf{2.\ Many noisy turns become angular diffusion.}
+
+Write \(b(h,\sigma)\) for the bias the noise leaves in equilibrium, and
+\(\sigma_c(h)\sim h^{-p}\) for the noise tolerated at step \(h\). Averaged over the
+noise, each kick contributes \(\sigma^2h^2/2(D-1)^2\) of diffusion \(\Delta_S\)
+across the sphere of directions, and a trajectory of length \(S\) holds \(S/h\)
+of them:
+\vspace{-0.12cm}
+\[
+  \frac{S}{h}\cdot\frac{\sigma^2h^2}{2(D-1)^2}\,\Delta_S
+  \;=\; O(\sigma^2h)\,\Delta_S ,
+\]
+\vspace{-0.45cm}
+
+the order in \(h\) that leaves HMC at \(p=\tfrac12\).
+
+\vspace{0.10cm}
+
+\textbf{3.\ The leading diffusion preserves equilibrium.}
+
+\vspace{-0.62cm}
+\[
+  \eqbox{\;
+  \begin{aligned}
+    \rho_0(\theta,u) &= \pi(\theta)\,\mu_S(u),
+      \qquad \Delta_S\rho_0 = 0\\[3pt]
+    &\Longrightarrow\;\; b(h,\sigma)=O(\sigma^2h^2)+o(\sigma^2)\\[3pt]
+    &\Longrightarrow\;\; \sigma_c(h)=\Omega(h^{-1}),\quad p\ge1
+  \end{aligned}
+  \;}
+\]
+\vspace{-0.45cm}
+
+The cancellation is \(\Delta_S\rho_0=0\): diffusion cannot spread directions that
+are already uniform, and clean RT transport preserves \(\rho_0\) too.
+
+\textbf{Individual paths wander at \(O(\sigma^2h)\). The distribution they settle
+into does not move at that order.}
+
+\vspace{0.10cm}
+
+\textbf{4.\ Is the bound tight?}
+
+Theory gives \(p\ge1\) for ray tracing against \(p=\tfrac12\) for HMC, so halving
+the step buys HMC \(1.4\times\) the tolerable noise and ray tracing at least
+\(2\times\).
+
+\vspace{0.06cm}
+\begin{center}
+\figslot{fig8_dimension_scaling.pdf}{0.87}{tolerance and exponent against dimension}
+\end{center}
+\vspace{0.06cm}
+{\small The bias is read against the clean chain at the \emph{same} step, so
+integration error cancels:
+\(b=\big[\mathbb{E}_{h,\sigma}\|\Theta\|^2-\mathbb{E}_{h,0}\|\Theta\|^2\big]/D
+=(\sigma/\sigma_c)^{2}+o(\sigma^2)\).}
+
+
+
+\end{block}
+
+
+
+\end{column}
+
+% ============ column 3: the measurement, then the real test ============
+\begin{column}{0.31\paperwidth}
+
+\begin{block}{Failure modes, measured}
+
+Injected noise, \(\sigma = 20\), \(D = 100\): stochastic-gradient HMC
+equilibrates three times off the shell with split \(\hat R = 1.00\), no alarm;
+ray tracing holds the shell.
+\begin{center}
+\figslot{shell_measured_poster.pdf}{0.68}{the shell, measured: off-shell chains still pass $\hat R$}
+\end{center}
+\vspace{0.04cm}
+
+The theory assumes the gradient error is independent of position and symmetric
+in sign. Force both onto a real minibatch (\emph{idealized} below) and the
+exponent holds; leave the batch as it comes and it decays with every halving, so
+no single \(p\) survives.
+
+\vspace{0.02cm}
+\begin{center}
+\figslot{fig9_erosion_and_frontier.pdf}{0.72}{exponent erosion beside the compute frontier}
+\end{center}
+\vspace{0.00cm}
+
+\end{block}
+
+\begin{block}{Uncertainty quality on the Gaia posterior}
+Gaia XP regression, 126{,}156 stars, \(D = 11{,}394\), sampled with minibatch
+ray tracing. Key: \textbf{\textcolor{softgray}{point (MAP)}},
+\textbf{\textcolor{rtblue}{deep ensemble}},
+\textbf{\textcolor{hmcred}{SGHMC}},
+\textbf{\textcolor{rtgold}{ray tracing}}.
+\begin{center}
+\figslot{exp7_structure.pdf}{0.66}{per-group calibration, z std per label-error bin}\\[0.04cm]
+\figslot{exp7_members.pdf}{0.66}{test NLL against members averaged}
+\end{center}
+\end{block}
+
+\begin{block}{Conclusion}
+\begin{itemize}\setlength{\itemsep}{0.02cm}
+  \item Gradient noise can only rotate a unit ray, and the fitted step
+    exponent confirms the bound: \(p=1\) at every dimension tested
+    (\(D=16\) to \(1024\)), against \(p=\tfrac12\) for stochastic HMC.
+  \item Real minibatches break the noise assumptions and erode the clean
+    exponent, yet the compute advantage survives (\(3.3\times\) cheaper per
+    effective sample; stochastic HMC \(5.1\times\) dearer). Still open:
+    whether \(p=1\) is exact in stationarity.
+  \item On a real survey posterior, only ray tracing keeps per-group
+    calibration flat, and member averaging passes a deep ensemble on test
+    NLL.
+\end{itemize}
+\end{block}
+
+\begin{block}{Acknowledgments}
+The \ProjectName{} project is supported by the Data Sciences Institute,
+University of Toronto. We thank the KAUST Academy for its support.
+\end{block}
+
+\end{column}
+
+\end{columns}
+
+\end{frame}
+\end{document}
