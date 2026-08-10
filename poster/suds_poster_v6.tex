@@ -337,7 +337,8 @@ ray tracing. Key: \textbf{\textcolor{gaiamap}{point (MAP)}},
 % and these two carry the only real-survey result on the board.
 \begin{center}
 \figslot{gaia_calibration_by_group.pdf}{0.82}{per-group calibration, z std per label-error bin}\\[0.06cm]
-\figslot{gaia_nll_vs_members.pdf}{0.82}{test NLL against members averaged}
+\figslot{exp7_cloud_poster.pdf}{0.78}{one star through 50 posterior draws: tight cloud, trusted prediction}\\[0.06cm]
+\figslot{exp7_marginal_poster.pdf}{0.70}{the disagreement star's predictive: MAP spike vs marginalized mass}
 \end{center}
 \end{block}
 
@@ -351,8 +352,8 @@ ray tracing. Key: \textbf{\textcolor{gaiamap}{point (MAP)}},
     effective sample; stochastic HMC \(5.1\times\) dearer). Still open:
     whether \(p=1\) is exact in stationarity.
   \item On a real survey posterior, only ray tracing keeps per-group
-    calibration flat, and member averaging passes a deep ensemble on test
-    NLL.
+    calibration flat, and marginalizing its draws beats the MAP fit by
+    0.24 nats per star on test NLL.
 \end{itemize}
 \end{block}
 
@@ -365,8 +366,9 @@ ray tracing. Key: \textbf{\textcolor{gaiamap}{point (MAP)}},
 \refitem{4}{Gaia Collaboration, Vallenari, A., et al.\ 2023, \emph{Gaia Data Release 3: Summary of the content and survey properties}, A\&A 674, A1}
 \vspace{0.30cm}
 
-\noindent\textbf{Acknowledgments}\ \ Supported by the Data Sciences Institute,
-University of Toronto, and the KAUST Academy.
+\noindent\textbf{Acknowledgments}\ \ The Hamiltonian Optimization and Sampling
+for Deep Learning project is supported by the Data Sciences Institute,
+University of Toronto. We thank the KAUST Academy for its support.
 }
 
 \end{column}
