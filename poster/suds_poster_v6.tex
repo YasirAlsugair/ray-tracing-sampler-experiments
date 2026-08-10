@@ -328,6 +328,9 @@ off the shell at split \(\hat R = 1.00\), the diagnostic seeing nothing wrong.
 \begin{column}{0.31\paperwidth}
 
 \begin{block}{Uncertainty quality on the Gaia posterior}
+\textbf{Result: only ray tracing keeps the error bars right in every group
+of stars, and averaging its 50 draws makes each held-out star 27\% more
+probable than the single best-fit network (MAP).}
 Gaia XP regression\refmark{4}, 126{,}156 stars, \(D = 11{,}394\), sampled with minibatch
 ray tracing. Key: \textbf{\textcolor{gaiamap}{point (MAP)}},
 \textbf{\textcolor{gaiaensemble}{deep ensemble}},
@@ -337,8 +340,17 @@ ray tracing. Key: \textbf{\textcolor{gaiamap}{point (MAP)}},
 % and these two carry the only real-survey result on the board.
 \begin{center}
 \figslot{gaia_calibration_by_group.pdf}{0.82}{per-group calibration, z std per label-error bin}\\[0.06cm]
-\figslot{exp7_cloud_poster.pdf}{0.78}{one star through 50 posterior draws: tight cloud, trusted prediction}\\[0.06cm]
-\figslot{exp7_marginal_poster.pdf}{0.70}{the disagreement star's predictive: MAP spike vs marginalized mass}
+\figslot{exp7_cloud_poster.pdf}{0.78}{one star through 50 posterior draws: tight cloud, trusted prediction}
+\end{center}
+\end{block}
+
+\begin{block}{Failure modes, measured}
+\textbf{The failure is silent.} Injected noise, \(\sigma = 20\), \(D = 100\):
+stochastic-gradient HMC settles \(3\times\) off the shell while the standard
+convergence check reads split \(\hat R = 1.00\); ray tracing holds the shell
+under the same noise.
+\begin{center}
+\figslot{shell_measured_poster.pdf}{0.63}{the shell, measured: the off-shell chain passes \(\hat R\)}
 \end{center}
 \end{block}
 
@@ -352,8 +364,8 @@ ray tracing. Key: \textbf{\textcolor{gaiamap}{point (MAP)}},
     effective sample; stochastic HMC \(5.1\times\) dearer). Still open:
     whether \(p=1\) is exact in stationarity.
   \item On a real survey posterior, only ray tracing keeps per-group
-    calibration flat, and marginalizing its draws beats the MAP fit by
-    0.24 nats per star on test NLL.
+    calibration flat, and averaging its draws makes each held-out star
+    27\% more probable than the single best fit.
 \end{itemize}
 \end{block}
 
