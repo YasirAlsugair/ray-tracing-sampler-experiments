@@ -10,7 +10,7 @@ cloud).
 exp7_marginal_poster.pdf: the SAME two stars seen in y, one panel each:
 MAP plug-in (gray dashed) vs the marginalized Student-t chain (gold, thin
 curves = 10 of the 50 members). On the typical star the curves agree; on
-the disagreement star the mass MAP cannot see is circled.
+the disagreement star the marginal carries mass where MAP has none.
 
 Star indices are the deterministic picks of
 experiments/exp7_predictive_figures.py (typical = median mu-cloud spread at
