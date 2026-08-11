@@ -128,12 +128,6 @@ for k, (ax, title) in enumerate(zip(axes2, titles)):
     ax.set_title(title)
     ax.set_xlabel(r"$y$ (alpha abundance)")
     ax.set_yticks([])
-    if k == 1:
-        region = (grid > 0.22) & (grid < 0.95)
-        hmax = float(mix[region].max())
-        ax.add_patch(Ellipse((0.58, 0.75 * hmax), 0.80, 2.0 * hmax,
-                             fill=False, ls="--", lw=2.2, edgecolor=INK,
-                             zorder=5))
 axes2[0].set_ylabel("predictive density")
 axes2[0].text(0.03, 0.95, "MAP", transform=axes2[0].transAxes, va="top",
               ha="left", fontsize=F, color=SOFTGRAY)
