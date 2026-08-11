@@ -134,8 +134,6 @@ for k, (ax, title) in enumerate(zip(axes2, titles)):
         ax.add_patch(Ellipse((0.58, 0.75 * hmax), 0.80, 2.0 * hmax,
                              fill=False, ls="--", lw=2.2, edgecolor=INK,
                              zorder=5))
-        ax.text(0.74, 2.3 * hmax, "mass MAP\ncannot see", fontsize=F,
-                color=INK, ha="center", va="bottom")
 axes2[0].set_ylabel("predictive density")
 axes2[0].text(0.03, 0.95, "MAP", transform=axes2[0].transAxes, va="top",
               ha="left", fontsize=F, color=SOFTGRAY)
