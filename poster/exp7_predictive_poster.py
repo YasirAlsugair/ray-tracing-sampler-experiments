@@ -7,9 +7,10 @@ together = the posterior agrees = trust the prediction. Dashed circles and
 two-word labels carry that takeaway; X = the Adam MAP fit (one point, no
 cloud).
 
-exp7_marginal_poster.pdf: the disagreement star's predictive densities, MAP
-plug-in (gray dashed) vs the marginalized Student-t chain (gold, thin curves
-= 10 of the 50 members), with the mass MAP cannot see circled.
+exp7_marginal_poster.pdf: the SAME two stars seen in y, one panel each:
+MAP plug-in (gray dashed) vs the marginalized Student-t chain (gold, thin
+curves = 10 of the 50 members). On the typical star the curves agree; on
+the disagreement star the mass MAP cannot see is circled.
 
 Star indices are the deterministic picks of
 experiments/exp7_predictive_figures.py (typical = median mu-cloud spread at
@@ -101,41 +102,47 @@ fig.savefig(OUT / "exp7_cloud_poster.pdf", bbox_inches="tight",
 fig.savefig(OUT / "exp7_cloud_poster.png", dpi=150, bbox_inches="tight",
             transparent=True)
 
-# ---- companion: what MAP cannot see, in y ----------------------------------
-i, yi, ei = I_DIS, ty[I_DIS], terr[I_DIS]
-S = np.sqrt(ei ** 2 + SIG[:, 1] ** 2)
-grid = np.linspace(-0.85, 1.5, 900)
-lp = tdist.logpdf(grid[None, :], df=NU[:, None], loc=MU[:, 1][:, None],
-                  scale=S[:, None])
-mix = np.exp(logsumexp(lp, axis=0) - np.log(len(NU)))
-s_map = np.sqrt(ei ** 2 + sig_map[1] ** 2)
-
-fig2, ax = plt.subplots(figsize=(9.6, 4.1), constrained_layout=True)
-for row in np.exp(lp)[::5]:
-    ax.plot(grid, row, color=RTGOLD, lw=0.7, alpha=0.15, zorder=1)
-map_pdf = norm.pdf(grid, mu_map[1], s_map)
-ax.plot(grid, map_pdf, color=SOFTGRAY, lw=2.4, ls="--", zorder=2)
-ax.plot(grid, mix, color=RTGOLD, lw=3.0, zorder=3)
-ax.axvline(yi, color=INK, lw=1.4, ls=":", zorder=4)
-top = 1.30 * float(map_pdf.max())        # cap: faint members may run off
-ax.set_ylim(0.0, top)
-region = (grid > 0.22) & (grid < 0.95)
-hmax = float(mix[region].max())
-ax.add_patch(Ellipse((0.58, 0.75 * hmax), 0.80, 2.0 * hmax, fill=False,
-                     ls="--", lw=2.2, edgecolor=INK, zorder=5))
-ax.text(0.58, 2.2 * hmax, "mass MAP cannot see", fontsize=F, color=INK,
-        ha="center")
-ax.text(0.02, 0.96, "MAP: one confident curve", transform=ax.transAxes,
-        va="top", ha="left", fontsize=F, color=SOFTGRAY)
-ax.text(0.02, 0.85, "sampled posterior:\nhonest disagreement",
-        transform=ax.transAxes, va="top", ha="left", fontsize=F,
-        color=RTGOLD)
-ax.text(yi, 0.62, "catalog value ", fontsize=F - 3, color=INK, ha="right",
-        va="top", transform=ax.get_xaxis_transform())
-ax.set_xlabel(r"$y$ (alpha abundance)")
-ax.set_ylabel("predictive density")
-ax.set_yticks([])
-ax.set_title("the same star, seen in $y$")
+# ---- companion: the same two stars, seen in y ------------------------------
+fig2, axes2 = plt.subplots(1, 2, figsize=(9.6, 3.6), constrained_layout=True)
+for k, (ax, title) in enumerate(zip(axes2, titles)):
+    yi, ei = ty[[I_TYP, I_DIS][k]], terr[[I_TYP, I_DIS][k]]
+    S = np.sqrt(ei ** 2 + SIG[:, k] ** 2)
+    s_map_k = float(np.sqrt(ei ** 2 + sig_map[k] ** 2))
+    c = MU[:, k].mean()
+    half = 5.0 * max(float(S.max()), s_map_k, abs(mu_map[k] - c))
+    grid = np.linspace(c - half, c + half, 900)
+    lp = tdist.logpdf(grid[None, :], df=NU[:, None], loc=MU[:, k][:, None],
+                      scale=S[:, None])
+    mix = np.exp(logsumexp(lp, axis=0) - np.log(len(NU)))
+    map_pdf = norm.pdf(grid, mu_map[k], s_map_k)
+    for row in np.exp(lp)[::5]:
+        ax.plot(grid, row, color=RTGOLD, lw=1.0, alpha=0.38, zorder=1)
+    ax.plot(grid, map_pdf, color=SOFTGRAY, lw=2.4, ls="--", zorder=2)
+    ax.plot(grid, mix, color=RTGOLD, lw=3.0, zorder=3)
+    ax.axvline(yi, color=INK, lw=1.4, ls=":", zorder=4)
+    if k == 0:
+        member_peak = float(np.exp(lp)[::5].max())
+        ax.set_ylim(0.0, 1.55 * max(member_peak, float(map_pdf.max())))
+    else:
+        ax.set_ylim(0.0, 1.30 * float(map_pdf.max()))
+    ax.set_title(title)
+    ax.set_xlabel(r"$y$ (alpha abundance)")
+    ax.set_yticks([])
+    if k == 1:
+        region = (grid > 0.22) & (grid < 0.95)
+        hmax = float(mix[region].max())
+        ax.add_patch(Ellipse((0.58, 0.75 * hmax), 0.80, 2.0 * hmax,
+                             fill=False, ls="--", lw=2.2, edgecolor=INK,
+                             zorder=5))
+        ax.text(0.74, 2.3 * hmax, "mass MAP\ncannot see", fontsize=F,
+                color=INK, ha="center", va="bottom")
+axes2[0].set_ylabel("predictive density")
+axes2[0].text(0.03, 0.95, "MAP", transform=axes2[0].transAxes, va="top",
+              ha="left", fontsize=F, color=SOFTGRAY)
+axes2[0].text(0.03, 0.82, "sampled posterior", transform=axes2[0].transAxes,
+              va="top", ha="left", fontsize=F, color=RTGOLD)
+axes2[0].text(0.03, 0.69, "dotted: catalog value", transform=axes2[0].transAxes,
+              va="top", ha="left", fontsize=F - 3, color=INK)
 fig2.savefig(OUT / "exp7_marginal_poster.pdf", bbox_inches="tight",
              transparent=True)
 fig2.savefig(OUT / "exp7_marginal_poster.png", dpi=150, bbox_inches="tight",
