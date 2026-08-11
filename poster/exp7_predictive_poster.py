@@ -83,7 +83,7 @@ for k, (ax, title) in enumerate(zip(axes, titles)):
     ax.set_xlabel(r"predicted value $\mu_m$")
 axes[0].set_ylabel(r"believed scatter $\sigma_m$")
 axes[0].set_xlim(-0.08, 0.92)
-axes[0].set_ylim(0.0, 0.136)
+axes[0].set_ylim(0.0, 0.112)
 # circle only the speck; the panel-2 cloud fills its frame, which IS the point
 cx, cy = MU[:, 0].mean(), SIG[:, 0].mean()
 axes[0].add_patch(Ellipse((cx, cy), 0.11, 0.024, fill=False, ls="--", lw=2.2,
@@ -94,9 +94,6 @@ axes[0].annotate("the 50 draws agree", (cx + 0.02, cy + 0.013),
 axes[0].annotate("MAP", (mu_map[0], sig_map[0]), xytext=(-42, -10),
                  textcoords="offset points", fontsize=F - 1, color=INK,
                  ha="right")
-axes[1].text(0.03, 0.99, "the draws disagree:\none fit hides this",
-             transform=axes[1].transAxes, va="top", ha="left",
-             fontsize=F, color=INK)
 axes[1].annotate("MAP", (mu_map[1], sig_map[1]), xytext=(-10, -4),
                  textcoords="offset points", fontsize=F - 1, color=INK,
                  ha="right")
