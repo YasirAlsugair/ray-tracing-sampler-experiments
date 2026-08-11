@@ -96,8 +96,10 @@ axes[0].annotate("MAP", (mu_map[0], sig_map[0]), xytext=(-42, -10),
 axes[1].text(0.03, 0.99, "the draws disagree:\none fit hides this",
              transform=axes[1].transAxes, va="top", ha="left",
              fontsize=F, color=INK)
-fig.savefig(OUT / "exp7_cloud_poster.pdf", bbox_inches="tight")
-fig.savefig(OUT / "exp7_cloud_poster.png", dpi=150, bbox_inches="tight")
+fig.savefig(OUT / "exp7_cloud_poster.pdf", bbox_inches="tight",
+            transparent=True)
+fig.savefig(OUT / "exp7_cloud_poster.png", dpi=150, bbox_inches="tight",
+            transparent=True)
 
 # ---- companion: what MAP cannot see, in y ----------------------------------
 i, yi, ei = I_DIS, ty[I_DIS], terr[I_DIS]
@@ -134,8 +136,10 @@ ax.set_xlabel(r"$y$ (alpha abundance)")
 ax.set_ylabel("predictive density")
 ax.set_yticks([])
 ax.set_title("the same star, seen in $y$")
-fig2.savefig(OUT / "exp7_marginal_poster.pdf", bbox_inches="tight")
-fig2.savefig(OUT / "exp7_marginal_poster.png", dpi=150, bbox_inches="tight")
+fig2.savefig(OUT / "exp7_marginal_poster.pdf", bbox_inches="tight",
+             transparent=True)
+fig2.savefig(OUT / "exp7_marginal_poster.png", dpi=150, bbox_inches="tight",
+             transparent=True)
 
 print("saved exp7_cloud_poster + exp7_marginal_poster to", OUT)
 print(f"check: nu range [{NU.min():.2f}, {NU.max():.2f}], "
