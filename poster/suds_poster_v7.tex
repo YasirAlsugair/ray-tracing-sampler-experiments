@@ -361,8 +361,8 @@ Key: \textbf{\textcolor{gaiamap}{point (MAP)}},
 \begin{block}{Conclusion}
 \begin{itemize}\setlength{\itemsep}{0.02cm}
   \item Gradient noise can steer a constant-speed ray, but it cannot heat
-    it, so the sampler is robust to noise. That one geometric fact is what
-    makes Bayesian sampling with minibatches workable.
+    it, so the sampler is robust to noise. Samplers that carry a velocity,
+    like HMC, have no such built-in protection.
   \item Real data is messier than the theory, but the advantage survives
     where it matters: the chains stay usable and cost less than the
     alternatives.
