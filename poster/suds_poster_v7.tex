@@ -365,9 +365,10 @@ Key: \textbf{\textcolor{gaiamap}{point (MAP)}},
   \item Real data is messier than the theory, but the advantage survives
     where it matters: the chains stay usable and cost less than the
     alternatives.
-  \item On the Gaia data, averaging the draws gave better predictions than
-    the single fit, and the error bars were correct in every group. A
-    large spread for a star means do not trust that prediction.
+  \item The framework is general: sample any network's posterior and every
+    prediction comes with error bars. For inputs far from the training
+    data the draws spread out, which helps to catch out-of-distribution
+    cases.
 \end{itemize}
 \end{block}
 
