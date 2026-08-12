@@ -360,14 +360,15 @@ Key: \textbf{\textcolor{gaiamap}{point (MAP)}},
 
 \begin{block}{Conclusion}
 \begin{itemize}\setlength{\itemsep}{0.02cm}
-  \item Gradient noise can steer a constant-speed ray, but it cannot heat
-    it, so the sampler is robust to noise. Samplers that carry a velocity,
-    like HMC, have no such built-in protection.
-  \item Real data is messier than the theory, but the advantage survives
-    where it matters: the chains stay usable and cost less than the
-    alternatives.
-  \item A sampled posterior gives what a single fitted network cannot:
-    honest error bars, and a warning whenever the model itself is unsure.
+  \item The mechanism is the fixed speed. A noisy gradient can turn the
+    ray, and turning is all it can do. That is where the robustness to
+    noise comes from.
+  \item With real minibatches the clean exponent erodes. The chains stay
+    usable anyway, and an effective sample still costs less than with
+    minibatch HMC.
+  \item On the Gaia posterior, averaged draws beat the single fit and
+    calibration held. When the draws scattered on a star, that spread told
+    us not to trust the prediction there.
 \end{itemize}
 \end{block}
 
