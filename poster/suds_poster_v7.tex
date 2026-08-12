@@ -365,9 +365,10 @@ Key: \textbf{\textcolor{gaiamap}{point (MAP)}},
   \item Real data is messier than the theory, but the advantage survives
     where it matters: the chains stay usable and cost less than the
     alternatives.
-  \item The payoff is marginalization: average the prediction over the
-    posterior draws instead of trusting one fitted network. The average is
-    more accurate, and the spread warns us when the model is guessing.
+  \item This project took the sampler from its paper to a real survey
+    posterior. The draws are the product: averaging them gives better
+    predictions than one fitted network, and their spread warns us when
+    the model is guessing.
 \end{itemize}
 \end{block}
 
