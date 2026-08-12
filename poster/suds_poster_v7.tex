@@ -360,15 +360,13 @@ Key: \textbf{\textcolor{gaiamap}{point (MAP)}},
 
 \begin{block}{Conclusion}
 \begin{itemize}\setlength{\itemsep}{0.02cm}
-  \item The mechanism is the fixed speed. A noisy gradient can turn the
-    ray, and turning is all it can do. That is where the robustness to
-    noise comes from.
-  \item With real minibatches the clean exponent erodes. The chains stay
-    usable anyway, and an effective sample still costs less than with
-    minibatch HMC.
-  \item On the Gaia posterior, averaged draws beat the single fit and
-    calibration held. When the draws scattered on a star, that spread told
-    us not to trust the prediction there.
+  \item The ray moves at a fixed speed, so a noisy gradient can only
+    change its direction. This is why the sampler is robust to noise.
+  \item On real data the clean scaling breaks down, but the sampler still
+    works, and an effective sample costs less than with minibatch HMC.
+  \item On the Gaia data, averaging the draws gave better predictions than
+    the single fit, and the error bars were correct in every group. A
+    large spread for a star means do not trust that prediction.
 \end{itemize}
 \end{block}
 
