@@ -362,8 +362,9 @@ Key: \textbf{\textcolor{gaiamap}{point (MAP)}},
 \begin{itemize}\setlength{\itemsep}{0.02cm}
   \item The ray moves at a fixed speed, so a noisy gradient can only
     change its direction. This is why the sampler is robust to noise.
-  \item On real data the clean scaling breaks down, but the sampler still
-    works, and an effective sample costs less than with minibatch HMC.
+  \item Real data is messier than the theory, but the advantage survives
+    where it matters: the chains stay usable and cost less than the
+    alternatives.
   \item On the Gaia data, averaging the draws gave better predictions than
     the single fit, and the error bars were correct in every group. A
     large spread for a star means do not trust that prediction.
