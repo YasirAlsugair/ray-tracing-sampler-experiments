@@ -1,8 +1,8 @@
 # SUDS showcase poster (Aug 14, 2026)
 
 `suds_poster_v4.tex` and `.pdf` are the preserved collaborative baseline.
-`suds_poster_v6.tex` and `.pdf` are a separate candidate revision for review;
-v6 does not replace v4.
+`suds_poster_v6.tex` and `.pdf` record the preceding revision. V7 is a separate
+candidate for review and does not overwrite either version.
 
 Both are 4 ft x 3 ft boards built with beamerposter at scale 1.32. Compile from
 this directory:
@@ -10,11 +10,13 @@ this directory:
 ```
 pdflatex suds_poster_v4.tex
 pdflatex suds_poster_v6.tex
+pdflatex suds_poster_v7.tex
 ```
 
 Any TeX Live with beamerposter works (TinyTeX is enough). All figure paths are
 relative. V4 reads `artifacts/figures/`; v6 first checks
-`artifacts/figures_v6/` and then falls back to the v4 assets and `figures/`.
+`artifacts/figures_v6/`; v7 first checks `artifacts/figures_v7/`. Each newer
+version falls back through the earlier asset directories and then `figures/`.
 
 ## Conventions (please keep)
 
@@ -43,6 +45,18 @@ python builders_v6/build_all.py
 See `builders_v6/README.md` for the input manifest, software requirements, and
 the optional provenance steps that recreate the minibatch diagnostic and train
 the 50-member Gaia ensemble.
+
+## Regenerating v7 figures
+
+The changed v7 figures live in `artifacts/figures_v7/`. Regenerate the two
+code-built overrides with:
+
+```
+python builders_v7/build_all.py
+```
+
+See `builders_v7/README.md` for the reused frozen inputs and the three locked
+Gaia visual assets.
 
 ## Regenerating v4 figures
 
