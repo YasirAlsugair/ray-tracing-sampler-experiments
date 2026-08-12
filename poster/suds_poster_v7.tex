@@ -360,18 +360,20 @@ Key: \textbf{\textcolor{gaiamap}{point (MAP)}},
 
 \begin{block}{Conclusion}
 \begin{itemize}\setlength{\itemsep}{0.02cm}
-  \item The mechanism is robust to gradient noise by construction: noise can
-    only rotate the constant-speed ray, never heat it, and the measured
-    tolerance exponent is \(p=1\) at every dimension tested
-    (\(D=16\) to \(1024\)), against \(p=\tfrac12\) for minibatch HMC.
-  \item On real data the clean mechanism breaks: minibatches erode the
-    exponent. Performance stays reasonable and sampling gets cheaper
-    (\(3.3\times\) less compute per effective sample; minibatch HMC
-    \(5.1\times\) dearer). Open: is \(p=1\) exact in stationarity?
-  \item Deployed on the Gaia posterior: per-group calibration
-    stays flat, averaging the draws makes each held-out star 27\% more
-    probable than the single best fit, and the posterior spread flags the
-    stars where one fit is silently wrong.
+  \item Noise cannot heat a ray that moves at constant speed, it can only
+    turn it. That is why the tolerance exponent stays at \(p=1\) at every
+    dimension we tested (\(D=16\) to \(1024\)), while minibatch HMC sits at
+    \(p=\tfrac12\).
+  \item Real minibatches do break this clean picture and the exponent
+    drops. Even so, the sampler keeps working and costs less: about
+    \(3.3\times\) less compute per effective sample, while minibatch HMC
+    gets \(5.1\times\) more expensive. Whether \(p=1\) holds exactly in
+    stationarity is still open.
+  \item On the Gaia data the method held up: the error bars come out right
+    in every group of stars, and averaging the draws makes each held-out
+    star 27\% more probable than the single best fit. When the draws
+    disagree about a star, that spread is a warning a single fit cannot
+    give.
 \end{itemize}
 \end{block}
 
