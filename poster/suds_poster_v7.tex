@@ -360,20 +360,14 @@ Key: \textbf{\textcolor{gaiamap}{point (MAP)}},
 
 \begin{block}{Conclusion}
 \begin{itemize}\setlength{\itemsep}{0.02cm}
-  \item Noise cannot heat a ray that moves at constant speed, it can only
-    turn it. That is why the tolerance exponent stays at \(p=1\) at every
-    dimension we tested (\(D=16\) to \(1024\)), while minibatch HMC sits at
-    \(p=\tfrac12\).
-  \item Real minibatches do break this clean picture and the exponent
-    drops. Even so, the sampler keeps working and costs less: about
-    \(3.3\times\) less compute per effective sample, while minibatch HMC
-    gets \(5.1\times\) more expensive. Whether \(p=1\) holds exactly in
-    stationarity is still open.
-  \item On the Gaia data the method held up: the error bars come out right
-    in every group of stars, and averaging the draws makes each held-out
-    star 27\% more probable than the single best fit. When the draws
-    disagree about a star, that spread is a warning a single fit cannot
-    give.
+  \item Gradient noise can steer a constant-speed ray, but it cannot heat
+    it. That one geometric fact is what makes Bayesian sampling with
+    minibatches workable.
+  \item Real data is messier than the theory, but the advantage survives
+    where it matters: the chains stay usable and cost less than the
+    alternatives.
+  \item A sampled posterior gives what a single fitted network cannot:
+    honest error bars, and a warning whenever the model itself is unsure.
 \end{itemize}
 \end{block}
 
