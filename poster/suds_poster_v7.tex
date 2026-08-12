@@ -365,10 +365,9 @@ Key: \textbf{\textcolor{gaiamap}{point (MAP)}},
   \item Real data is messier than the theory, but the advantage survives
     where it matters: the chains stay usable and cost less than the
     alternatives.
-  \item The framework is general: sample any network's posterior and every
-    prediction comes with error bars. For inputs far from the training
-    data the draws spread out, which helps to catch out-of-distribution
-    cases.
+  \item Out-of-distribution data is the risky case: a single fit still
+    answers with full confidence. The posterior draws spread out there,
+    and that tells us the model is guessing.
 \end{itemize}
 \end{block}
 
