@@ -73,7 +73,7 @@ mu_map, sig_map = mp["mu"][[I_TYP, I_DIS]], mp["sig"][[I_TYP, I_DIS]]
 # ---- panel pair: the cloud, shared axes ------------------------------------
 fig, axes = plt.subplots(1, 2, figsize=(9.6, 3.55), constrained_layout=True,
                          sharex=True, sharey=True)
-titles = ["a typical star", "a star the model disagrees on"]
+titles = ["a typical star", "where the draws disagree"]
 for k, (ax, title) in enumerate(zip(axes, titles)):
     ax.scatter(MU[:, k], SIG[:, k], s=34, color=RTGOLD, alpha=0.85,
                linewidths=0, zorder=3)
