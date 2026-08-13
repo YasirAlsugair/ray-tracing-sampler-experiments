@@ -144,7 +144,7 @@
   \emph{typical set}: a thin shell near $\|\theta\|^2 \approx D$.
   A correct sampler therefore spends almost all its time on this shell.}
 
-\newcommand{\mcmcsectiontitle}{MCMC in the era of big data}
+\newcommand{\mcmcsectiontitle}{Minibatch gradients are cheap but noisy}
 \newcommand{\mcmcsectionbody}{%
   Markov chain Monte Carlo (MCMC) generates a sequence of correlated samples
   targeting $\pi$. Gradient-based samplers use $\nabla\log\pi(\theta)$ to guide
@@ -169,7 +169,7 @@
   \end{center}
   \vspace{-0.35cm}}
 
-\newcommand{\noiseblocktitle}{HMC and ray tracing under gradient noise}
+\newcommand{\noiseblocktitle}{Noise heats HMC but only turns a ray}
 % v7: the mechanism figure gained a third position-space tile, so it takes the
 % full figure minipage and a slightly wider share of the row to keep each tile
 % readable at distance.
@@ -233,16 +233,15 @@
 % ============ column 1: why sample, where it lives, how you draw ============
 \begin{column}{0.29\paperwidth}
 
-\begin{block}{Why sample a neural network?}
+\begin{block}{A trained network is a single guess}
 \vspace{0.34cm}
 
 \begin{center}
 \figslot{data_bands.pdf}{0.62}{posterior draws vs one Adam fit}
 \end{center}
 \vspace{-0.3cm}
-\textbf{Ordinary training:} one set of weights $\rightarrow$ one function.\\
-\textbf{Bayesian sampling:} a distribution over weights $\theta$ $\rightarrow$
-uncertainty over functions.
+Ordinary training gives one set of weights, one function. Bayesian sampling
+gives a distribution over weights \(\theta\), so uncertainty over functions.
 \vspace{-0.05cm}
 \[
   \pi(\theta) \;=\; p(\theta \mid \mathcal{D}) \;\propto\;
@@ -252,7 +251,7 @@ uncertainty over functions.
 
 \end{block}
 
-\begin{block}{Where the probability lives}
+\begin{block}{Probability lives on a thin shell}
   \vspace{0.3cm}
 \typicalsectionlead
 \begin{center}
@@ -340,23 +339,23 @@ Across \(D=16\)--\(1024\), \(\sigma_c\propto h^{-1}\) for RT and
 % ============ column 3: the measurement, then the real test ============
 \begin{column}{0.31\paperwidth}
 
-\begin{block}{Uncertainty quality on the Gaia posterior}
-\textbf{Result: the sampled error bars are correct, and averaging the
-draws beats the single best fit.}
-
-Data\refmark{4,5}: 126{,}156 giants; a network (\(D = 11{,}394\)) sampled
-with minibatch ray tracing.\\
-Input: the star's Gaia XP spectrum (110 coefficients).\\
-Output: its alpha abundance plus a per-star scatter (labels from APOGEE).\\
-Key: \textbf{\textcolor{gaiamap}{point (MAP)}},
+\begin{block}{Honest error bars on real Gaia data}
+We predict each star's alpha abundance plus a per-star scatter from its
+Gaia XP spectrum (110 coefficients), for 126{,}156 giants with APOGEE
+labels\refmark{4,5}, using a \(D = 11{,}394\) network sampled with
+minibatch ray tracing.
+% The two panel rows below carry the only real-survey result on the board.
+\begin{center}
+{\footnotesize Key: \textbf{\textcolor{gaiamap}{point (MAP)}},
 \textbf{\textcolor{gaiaensemble}{deep ensemble}},
 \textbf{\textcolor{gaiasghmc}{SGHMC}}\refmark{3},
-\textbf{\textcolor{gaiart}{ray tracing}}.
-% Stacked at close to native scale: the references tightened enough to afford it,
-% and these two carry the only real-survey result on the board.
-\begin{center}
+\textbf{\textcolor{gaiart}{ray tracing}}}\\[0.04cm]
+\begin{picture}(0,0)%
+\put(395,254){\small ray tracing stays near 1 in every bin}%
+\end{picture}%
 \figslot{gaia_calibration_by_group.pdf}{0.78}{per-group calibration, z std per label-error bin}\\[-0.78cm]
 {\footnotesize z std = actual / claimed error: closer to 1 is better.}\\[0.52cm]
+{\footnotesize averaging the draws beats the single best fit:}\\[0.04cm]
 \figslot{exp7_cloud_poster.pdf}{0.76}{one star through 50 posterior draws: tight cloud, trusted prediction}\\[0.06cm]
 \figslot{exp7_marginal_poster.pdf}{0.70}{the same two stars in \(y\): MAP spike vs marginalized mass}
 \end{center}
@@ -365,15 +364,12 @@ Key: \textbf{\textcolor{gaiamap}{point (MAP)}},
 \begin{block}{Conclusion}
 % Provisional: conclusion wording remains TBD for the final poster.
 \begin{itemize}\setlength{\itemsep}{0.02cm}
-  \item The ray moves at a fixed speed, so a noisy gradient can only
-    change its direction. This is why the sampler is robust to noise.
-  \item Real data is messier than the theory, but the advantage survives
-    where it matters: the chains stay usable and cost less than the
-    alternatives.
-  \item This project took the sampler from its paper to a real survey
-    posterior. The draws are the product: averaging them gives better
-    predictions than one fitted network, and their spread warns us when
-    the model is guessing.
+  \item We took the sampler from its paper to a real survey posterior.
+    The draws are the product: averaging them beat the single best fit,
+    and their spread warns us when the model is guessing.
+  \item The gains held on real data: held-out stars were 27\% more
+    probable than under the single fit, and an effective sample took
+    3.3\(\times\) less data than full-batch sampling.
 \end{itemize}
 \end{block}
 
