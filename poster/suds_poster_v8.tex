@@ -368,9 +368,8 @@ minibatch ray tracing.
   \item The gains held on real data: held-out stars were 27\% more
     probable than under the single fit, and an effective sample took
     3.3\(\times\) less data than full-batch sampling.
-  \item The theory held as well: gradient noise can only turn a
-    constant-speed ray, and the predicted noise tolerance (\(p=1\),
-    against \(p=\tfrac12\) for HMC) matched at every dimension we tested.
+  \item The ray moves at a fixed speed, so a noisy gradient can only
+    change its direction. This is why the sampler is robust to noise.
 \end{itemize}
 \end{block}
 
