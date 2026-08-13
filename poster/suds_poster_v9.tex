@@ -372,17 +372,15 @@ minibatch ray tracing.
 
 \begin{block}{Conclusion}
 \begin{itemize}\setlength{\itemsep}{0.02cm}
-  \item Ray tracing moves at fixed speed, so gradient noise changes the ray's
-    direction, not its speed. Under an idealized isotropic model of this noise,
-    halving the step size doubles the tolerated noise level. Since minibatch
-    noise scales as \(B^{-1/2}\), this would allow the batch to be four times
-    smaller at the same bias tolerance.
-  \item Real minibatch noise departs from this model, weakening
-    the ideal \(h^{-1}\) scaling. Even so, smaller steps tolerate more noise,
-    and smaller batches reduce RT's cost per effective sample.
-  \item On real stellar data, ray tracing provides well-calibrated uncertainty
-    estimates and competitive predictive performance. Averaging 50 draws gives 27\%
-    higher predictive probability on held-out stars than the best single fit.
+  \item The ray moves at a fixed speed, so a noisy gradient can only
+    change its direction. This is why the sampler is robust to noise.
+  \item We took the ray tracing sampler from its paper\refmark{2} to a
+    real survey posterior. The draws are the product: averaging them beat
+    the single best fit, and their spread warns us when the model is
+    guessing.
+  \item The gains held on real data: on average, held-out stars were
+    27\% more probable under the posterior average than under the single
+    best fit, most of it from the averaging alone.
 \end{itemize}
 \end{block}
 
