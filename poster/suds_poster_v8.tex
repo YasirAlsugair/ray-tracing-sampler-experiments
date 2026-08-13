@@ -368,8 +368,10 @@ minibatch ray tracing.
     the single best fit, and their spread warns us when the model is
     guessing.
   \item The gains held on real data: held-out stars were 27\% more
-    probable than under the single fit, and an effective sample took
-    3.3\(\times\) less data than full-batch sampling.
+    probable under the posterior average than under the single fit, and
+    per effective sample, minibatching touched 3.3\(\times\) fewer data
+    rows than the same sampler run full batch (superconductivity
+    benchmark).
 \end{itemize}
 \end{block}
 
