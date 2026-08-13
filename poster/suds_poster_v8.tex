@@ -361,6 +361,8 @@ minibatch ray tracing.
 \begin{block}{Conclusion}
 % Provisional: conclusion wording remains TBD for the final poster.
 \begin{itemize}\setlength{\itemsep}{0.02cm}
+  \item The ray moves at a fixed speed, so a noisy gradient can only
+    change its direction. This is why the sampler is robust to noise.
   \item We took the ray tracing sampler from its paper\refmark{2} to a
     real survey posterior. The draws are the product: averaging them beat
     the single best fit, and their spread warns us when the model is
@@ -368,8 +370,6 @@ minibatch ray tracing.
   \item The gains held on real data: held-out stars were 27\% more
     probable than under the single fit, and an effective sample took
     3.3\(\times\) less data than full-batch sampling.
-  \item The ray moves at a fixed speed, so a noisy gradient can only
-    change its direction. This is why the sampler is robust to noise.
 \end{itemize}
 \end{block}
 
