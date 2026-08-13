@@ -1,0 +1,399 @@
+% SUDS Showcase poster v8, August 14, 2026
+% 4 ft x 3 ft landscape (121.92 cm x 91.44 cm), beamerposter.
+% Build:  cd poster && pdflatex suds_poster_v8.tex
+% Figures: every figure used by v8 is pinned in artifacts/figures_v8/.
+
+\newcommand{\AuthorOne}{Yasir Alsugair}
+\newcommand{\AuthorTwo}{Chuxuan Ai}
+
+\documentclass[final]{beamer}
+\usepackage[size=custom,width=121.92,height=91.44,scale=1.32]{beamerposter}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+% big operators come from the extension font at its 10pt design size, so without
+% this \int and \sum stay small while everything else scales up to poster size
+\usepackage{exscale}
+\renewcommand{\familydefault}{\sfdefault}
+% beamer's default sans math has no sans Greek, so it silently mixes a serif
+% theta into sans variables. One serif math family throughout instead.
+\usefonttheme[onlymath]{serif}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{qrcode}
+\graphicspath{{artifacts/figures_v8/}{artifacts/figures_v7/}{artifacts/figures_v6/}{artifacts/figures/}{figures/}}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamersize{text margin left=2.5cm, text margin right=2.5cm}
+
+\definecolor{uoftblue}{HTML}{002A5C}
+\definecolor{inktext}{HTML}{20222B}
+\definecolor{panelbg}{HTML}{F4F5F8}
+\definecolor{softgray}{HTML}{8A8D99}
+% Figure-local keys: the plots are allowed their own palettes, but nearby prose
+% must repeat the colours visible in the corresponding figure.
+\definecolor{gaiamap}{HTML}{9AA0AC}
+\definecolor{gaiaensemble}{HTML}{3976B9}
+\definecolor{gaiasghmc}{HTML}{8064A2}
+\definecolor{gaiart}{HTML}{E6A11A}
+
+\newcommand{\dd}{\mathrm{d}}
+
+% numbered marker pointing into the References block at the foot of column 3
+\newcommand{\refmark}[1]{\textsuperscript{\textcolor{uoftblue}{[#1]}}}
+% one reference line, hung so the number stays in the left margin
+\newcommand{\refitem}[2]{\noindent\hangindent=1.5em\hangafter=1 [#1]~#2\par}
+
+% boxed key equations: \boxed inherits \fboxsep, whose 3pt default crowds a tall
+% fraction against the rule at poster scale
+\newcommand{\eqbox}[1]{{\setlength{\fboxsep}{9pt}\boxed{#1}}}
+
+% Header band shares its outer edges with the block bars below, which run
+% \bandmargin .. \paperwidth-\bandmargin on this geometry. Both the band and
+% \linewidth are centred on the paper, so centring a \bandwidth box inside
+% \linewidth lands on those edges without depending on beamer's column widths.
+\newlength{\bandmargin}\setlength{\bandmargin}{2.13cm}
+\newlength{\bandwidth}\setlength{\bandwidth}{\paperwidth}
+\addtolength{\bandwidth}{-2\bandmargin}
+\newcommand{\bandrule}{%
+  \noindent\hbox to \linewidth{\hss
+    \textcolor{uoftblue}{\rule{\bandwidth}{1.8mm}}%
+  \hss}}
+
+% Three logos on one line. The band gets an explicit height so what follows it
+% does not depend on how deep the centred title box happens to be, and the
+% flanking logo groups are set in zero-width boxes so the title stays centred on
+% the paper whatever those groups measure.
+\newlength{\bandheight}\setlength{\bandheight}{10.6cm}
+\newcommand{\headerband}[1]{%
+  \noindent\hbox to \linewidth{\hss
+    \begin{minipage}[c][\bandheight][c]{\bandwidth}\leavevmode#1\end{minipage}%
+  \hss}}
+
+\setbeamercolor{normal text}{fg=inktext}
+\setbeamercolor{block title}{fg=white,bg=uoftblue}
+\setbeamercolor{block body}{fg=inktext,bg=panelbg}
+\setbeamerfont{block title}{size=\Large,series=\bfseries}
+\setbeamercolor{itemize item}{fg=uoftblue}
+
+\setbeamertemplate{block begin}{%
+  \begin{beamercolorbox}[ht=3.6ex,dp=1.2ex,leftskip=1.2ex]{block title}%
+    \usebeamerfont*{block title}\insertblocktitle
+  \end{beamercolorbox}%
+  \nointerlineskip
+  \begin{beamercolorbox}[vmode]{block body}%
+    \vspace{0.9ex}%
+    % Use a genuinely narrower content area so text, figures, and side-by-side
+    % minipages all share the same small inset and see the correct \linewidth.
+    \noindent\hspace*{1.2ex}%
+    \begin{minipage}{\dimexpr\linewidth-2.4ex\relax}%
+    \raggedright
+    \setlength{\parskip}{0.21\baselineskip}\setlength{\parindent}{0pt}
+}
+\setbeamertemplate{block end}{%
+  \vspace{0.9ex}%
+  \end{minipage}\hspace*{1.2ex}\par
+  \end{beamercolorbox}\vspace{0.20cm}
+}
+
+% centre logos on a shared optical line, nudged slightly above the surrounding
+% name baseline so the three marks sit comfortably within the header band
+\newcommand{\vlogo}[1]{\raisebox{\dimexpr-0.5\height+0.8ex\relax}{#1}}
+% centre a photo chip on the optical middle of the adjacent name, half an
+% x-height above the baseline
+\newcommand{\vphoto}[1]{\raisebox{\dimexpr-0.5\height+0.8ex\relax}{#1}}
+
+% a headshot, or a small labeled placeholder if the file is missing. The
+% placeholder parbox is bottom-anchored so it hangs from the baseline like a
+% real image would, and \vlogo centers both the same way.
+\newlength{\photoside}\setlength{\photoside}{4.5cm}
+\newcommand{\photoslot}[2]{% file, label
+  \IfFileExists{figures/#1}%
+    {\includegraphics[height=\photoside]{#1}}%
+    {\fcolorbox{softgray}{white}{\parbox[b][\photoside][c]{\photoside}{\centering
+       \textcolor{softgray}{\footnotesize #2}}}}}
+
+% a logo, or a labeled placeholder box if the file is missing
+\newcommand{\logoslot}[4]{% file, label, height, placeholder width
+  \IfFileExists{figures/#1}%
+    {\includegraphics[height=#3]{#1}}%
+    {\fcolorbox{softgray}{white}{\parbox[c][#3][c]{#4}{\centering
+       \textcolor{softgray}{\small #2\\ {\tiny drop \texttt{\detokenize{figures/#1}}}}}}}}
+
+% Prefer the pinned v8 assets, then fall back to earlier asset sets,
+% and show a labeled placeholder rather than a failed build.
+\newcommand{\figslot}[3]{% file, width fraction, label
+  \IfFileExists{artifacts/figures_v8/#1}%
+    {\includegraphics[width=#2\linewidth]{artifacts/figures_v8/#1}}%
+    {\IfFileExists{artifacts/figures_v7/#1}%
+    {\includegraphics[width=#2\linewidth]{artifacts/figures_v7/#1}}%
+    {\IfFileExists{artifacts/figures_v6/#1}%
+    {\includegraphics[width=#2\linewidth]{artifacts/figures_v6/#1}}%
+    {\IfFileExists{artifacts/figures/#1}%
+    {\includegraphics[width=#2\linewidth]{#1}}%
+    {\IfFileExists{figures/#1}%
+      {\includegraphics[width=#2\linewidth]{#1}}%
+      {\fcolorbox{softgray}{white}{\parbox[c][6cm][c]{#2\linewidth}{\centering
+         \textcolor{softgray}{\small #3\\ {\tiny missing \texttt{\detokenize{#1}}}}}}}}}}}}
+
+\newcommand{\typicalsectionlead}{\vspace{-0.10cm}}
+\newcommand{\typicalsectionfigure}{%
+  \figslot{typical_set.pdf}{0.95}{density $\times$ volume and the typical shell}}
+\newcommand{\typicalsectiontail}{%
+  \vspace{0.08cm}
+  Because volume grows as $r^{D-1}$, probability concentrates in the
+  \emph{typical set}: a thin shell near $\|\theta\|^2 \approx D$.
+  A correct sampler therefore spends almost all its time on this shell.}
+
+\newcommand{\mcmcsectiontitle}{MCMC in the era of big data}
+\newcommand{\mcmcsectionbody}{%
+  Markov chain Monte Carlo (MCMC) generates a sequence of correlated samples
+  targeting $\pi$. Gradient-based samplers use $\nabla\log\pi(\theta)$ to guide
+  their updates. Computing this gradient exactly uses all $N$ data points. A
+  minibatch of size $B \ll N$ is unbiased and roughly $N/B$ times
+  cheaper, but never exact:
+  \vspace{-0.18cm}
+  \[
+    \widehat g_B(\theta)
+    = \nabla\log p(\theta)
+      + \frac{N}{B}\sum_{i\in\mathcal B}\nabla\log p(\mathcal D_i\mid\theta),
+    \qquad \operatorname{Cov}[\widehat g_B] \propto 1/B.
+  \]
+
+  \vspace{-0.22cm}
+  {\small\textit{Example:} UCI Superconductivity Bayesian linear regression
+  ($D=81$, $N=17{,}010$).}
+
+  \vspace{-0.32cm}
+  \begin{center}
+    \figslot{minibatch_gradient.pdf}{0.96}{minibatch gradients against the exact one}
+  \end{center}
+  \vspace{-0.35cm}}
+
+\newcommand{\noiseblocktitle}{HMC and ray tracing under gradient noise}
+% v7: the mechanism figure gained a third position-space tile, so it takes the
+% full figure minipage and a slightly wider share of the row to keep each tile
+% readable at distance.
+\newcommand{\noisegeometryscale}{1.0}
+\newcommand{\noisegeometrypre}{\vspace{-0.45cm}}
+\newcommand{\noisefigurewidth}{0.84}
+\newcommand{\noisecodewidth}{0.14}
+\newcommand{\noiseqrheight}{4.02cm}
+\newcommand{\noiseblockopening}{%
+  Hamiltonian Monte Carlo (HMC)\refmark{1} and ray tracing (RT)\refmark{2}
+  are gradient-based samplers that both use $\nabla\log\pi$. HMC evolves an
+  unconstrained velocity, whereas RT evolves a unit direction.
+
+  \textbf{1.\ One noisy step}
+
+  Without a Metropolis correction, mean-zero gradient noise raises HMC's
+  expected kinetic energy, increasing its speed.
+
+  For RT, write the isotropic gradient error as $\sigma\zeta$. With
+  $n(\theta)=\pi(\theta)^{1/(D-1)}$, the unit direction obeys
+  \vspace{-0.03cm}
+  \[
+      \frac{\dd u}{\dd s}
+      = P_u\,\bigg(\nabla \log n(\theta) + \frac{\sigma}{D-1}\,\zeta \bigg),
+      \qquad
+      P_u = I - uu^\top .
+  \]
+  \vspace{-0.45cm}
+
+  $P_u$ projects onto the tangent plane, so noise can rotate $u$ but cannot
+  change its norm.}
+
+\begin{document}
+\begin{frame}[t]
+
+% ---------------- header band ----------------
+% top margin matched to the 2.13 cm side margin
+\vspace{1.70cm}
+\headerband{%
+  \rlap{\vlogo{\logoslot{dept_logo_trim.png}{U of T Statistical Sciences signature}{4.3cm}{12cm}}}%
+  \parbox[c]{\bandwidth}{\centering
+    {\textcolor{uoftblue}{\textbf{\huge Toward Scalable Bayesian Uncertainty for Machine Learning\\[0.3ex] with the Ray Tracing Sampler}}}\\[0.70cm]
+    {\LARGE
+      \vphoto{\photoslot{photo_yasir_alsugair.png}{Yasir}}\hspace{0.55cm}\AuthorOne{}
+      \hspace{2.2cm}
+      \vphoto{\photoslot{Chuxuan.png}{Chuxuan}}\hspace{0.55cm}\AuthorTwo{}
+      \hspace{3.0cm}
+      {\large\textcolor{softgray}{Supervisors:}\ Prof.\ Joshua Speagle and Prof.\ Ricardo Baptista}}}%
+  \llap{%
+    \vlogo{\logoslot{dsi_logo_standalone.png}{Data Sciences Institute logo}{3.0cm}{12cm}}%
+    \hspace{3.0cm}%
+    \vlogo{\logoslot{kaust_academy_logo_trim.png}{KAUST Academy logo}{6.0cm}{12cm}}}%
+}
+\vspace{0.22cm}
+\bandrule
+\vspace{0.18cm}
+
+% ---------------- three columns ----------------
+\begin{columns}[t]
+
+% ============ column 1: why sample, where it lives, how you draw ============
+\begin{column}{0.29\paperwidth}
+
+\begin{block}{Why sample a neural network?}
+\vspace{0.34cm}
+
+\begin{center}
+\figslot{data_bands.pdf}{0.62}{posterior draws vs one Adam fit}
+\end{center}
+\vspace{-0.3cm}
+\textbf{Ordinary training:} one set of weights $\rightarrow$ one function.\\
+\textbf{Bayesian sampling:} a distribution over weights $\theta$ $\rightarrow$
+uncertainty over functions.
+\vspace{-0.05cm}
+\[
+  \pi(\theta) \;=\; p(\theta \mid \mathcal{D}) \;\propto\;
+  \underbrace{p(\mathcal{D} \mid \theta)}_{\text{fit}}\;
+  \underbrace{p(\theta)}_{\text{prior}}
+\]
+
+\end{block}
+
+\begin{block}{Where the probability lives}
+  \vspace{0.3cm}
+\typicalsectionlead
+\begin{center}
+\typicalsectionfigure
+\end{center}
+\typicalsectiontail
+\end{block}
+
+
+\begin{block}{\mcmcsectiontitle}
+\vspace{0.3cm}
+\mcmcsectionbody
+\end{block}
+
+\end{column}
+
+% ===================== middle column =====================
+\begin{column}{0.31\paperwidth}
+
+\begin{block}{\noiseblocktitle}
+
+\noiseblockopening
+
+% The QR rides in the schematic's spare margin (zero vertical cost): the demo's
+% velocity inset is this figure animated, so it is captioned as its live twin.
+\noisegeometrypre
+\noindent
+\begin{minipage}[c]{\noisefigurewidth\linewidth}
+  \centering
+  \figslot{noise_geometry.pdf}{\noisegeometryscale}{HMC heating versus RT rotation}
+\end{minipage}\hfill
+\begin{minipage}[c]{\noisecodewidth\linewidth}
+  \centering
+  \qrcode[height=\noiseqrheight,level=H]{https://chuxuan-a.github.io/rt-demo/}\\[0.5ex]
+  \vspace{0.3cm}
+  {\small \textbf{Live demo}}
+\end{minipage}
+
+\vspace{0.10cm}
+\textbf{2.\ Along a trajectory}
+
+With step size \(h\) and trajectory length \(S\), the \(S/h\) noisy kicks
+accumulate as
+\vspace{-0.12cm}
+\[
+  \frac{S}{h} \cdot
+  O(\sigma^2h^2)
+  \;=\; O(\sigma^2h) .
+\]
+\vspace{-0.45cm}
+
+Let \(\sigma_c(h)\) be the largest noise scale at step \(h\) that keeps long-run
+bias below a fixed tolerance, with \(\sigma_c(h)\propto h^{-p}\). For unadjusted
+minibatch HMC, \(p=\tfrac12\).
+
+\vspace{0.10cm}
+\textbf{3.\ Long-run bias}
+
+For RT, isotropic rotations leave the uniform direction distribution unchanged,
+so the \(O(\sigma^2h)\) effect creates no leading bias:
+\vspace{-0.05cm}
+\[
+  \eqbox{\;
+  \begin{aligned}
+    b_{\mathrm{RT}}(h,\sigma) &= O(\sigma^2h^2)+o(\sigma^2)\\[3pt]
+    &\Longrightarrow\;\; \sigma_c(h)=\Omega(h^{-1}),\quad p\ge1
+  \end{aligned}
+  \;}
+\]
+\vspace{-0.42cm}
+\end{block}
+
+\begin{block}{Measured noise tolerance and sampling cost}
+Across \(D=16\)--\(1024\), \(\sigma_c\propto h^{-1}\) for RT and
+\(\sigma_c\propto h^{-1/2}\) for HMC; real minibatch noise weakens RT's scaling.
+
+\begin{center}
+\makebox[\linewidth][c]{%
+  \figslot{tolerance_erosion_frontier.pdf}{1.04}{tolerance, erosion and sampling cost}}
+\end{center}
+\end{block}
+
+\end{column}
+
+% ============ column 3: the measurement, then the real test ============
+\begin{column}{0.31\paperwidth}
+
+\begin{block}{Uncertainty quality on the Gaia posterior}
+\textbf{Result: the sampled error bars are correct, and averaging the
+draws beats the single best fit.}
+
+Data\refmark{4,5}: 126{,}156 giants; a network (\(D = 11{,}394\)) sampled
+with minibatch ray tracing.\\
+Input: the star's Gaia XP spectrum (110 coefficients).\\
+Output: its alpha abundance plus a per-star scatter (labels from APOGEE).\\
+Key: \textbf{\textcolor{gaiamap}{point (MAP)}},
+\textbf{\textcolor{gaiaensemble}{deep ensemble}},
+\textbf{\textcolor{gaiasghmc}{SGHMC}}\refmark{3},
+\textbf{\textcolor{gaiart}{ray tracing}}.
+% Stacked at close to native scale: the references tightened enough to afford it,
+% and these two carry the only real-survey result on the board.
+\begin{center}
+\figslot{gaia_calibration_by_group.pdf}{0.78}{per-group calibration, z std per label-error bin}\\[-0.78cm]
+{\footnotesize z std = actual / claimed error: closer to 1 is better.}\\[0.52cm]
+\figslot{exp7_cloud_poster.pdf}{0.76}{one star through 50 posterior draws: tight cloud, trusted prediction}\\[0.06cm]
+\figslot{exp7_marginal_poster.pdf}{0.70}{the same two stars in \(y\): MAP spike vs marginalized mass}
+\end{center}
+\end{block}
+
+\begin{block}{Conclusion}
+% Provisional: conclusion wording remains TBD for the final poster.
+\begin{itemize}\setlength{\itemsep}{0.02cm}
+  \item The ray moves at a fixed speed, so a noisy gradient can only
+    change its direction. This is why the sampler is robust to noise.
+  \item Real data is messier than the theory, but the advantage survives
+    where it matters: the chains stay usable and cost less than the
+    alternatives.
+  \item This project took the sampler from its paper to a real survey
+    posterior. The draws are the product: averaging them gives better
+    predictions than one fitted network, and their spread warns us when
+    the model is guessing.
+\end{itemize}
+\end{block}
+
+{\footnotesize\setlength{\parskip}{0.20\baselineskip}
+\noindent\textcolor{uoftblue}{\rule{\linewidth}{0.7mm}}\\[0.35ex]
+\textbf{References}\par
+\refitem{1}{Betancourt, M.\ 2017, \emph{A Conceptual Introduction to Hamiltonian Monte Carlo}, arXiv:1701.02434}
+\refitem{2}{Behroozi, P.\ 2026, \emph{The Ray Tracing Sampler: Bayesian Sampling of Neural Networks for Everyone}, Open Journal of Astrophysics 9, doi:10.33232/001c.165932}
+\refitem{3}{Chen, T., Fox, E.\,B., Guestrin, C.\ 2014, \emph{Stochastic Gradient Hamiltonian Monte Carlo}, ICML, PMLR 32(2), 1683}
+\refitem{4}{Gaia Collaboration, Vallenari, A., et al.\ 2023, \emph{Gaia Data Release 3: Summary of the content and survey properties}, A\&A 674, A1}
+\refitem{5}{Laroche, A., Speagle, J.\,S.\ 2025, \emph{Closing the Stellar Labels Gap: Stellar Label Independent Evidence for [\(\alpha\)/M] Information in Gaia BP/RP Spectra}, ApJ 979, 5}
+\vspace{0.30cm}
+
+\noindent\textbf{Acknowledgments}\ \ Supported by the Data Sciences Institute,
+University of Toronto, and the KAUST Academy.
+}
+
+\end{column}
+
+\end{columns}
+
+\end{frame}
+\end{document}
