@@ -367,11 +367,10 @@ minibatch ray tracing.
     real survey posterior. The draws are the product: averaging them beat
     the single best fit, and their spread warns us when the model is
     guessing.
-  \item The gains held on real data: held-out stars were 27\% more
-    probable under the posterior average than under the single fit, and
-    per effective sample, minibatching touched 3.3\(\times\) fewer data
-    rows than the same sampler run full batch (superconductivity
-    benchmark).
+  \item The gains held on real data: averaged over the 25{,}232 held-out
+    stars, predictions were 27\% more probable under the posterior
+    average than under the single best fit; 23\% of that comes from the
+    averaging alone, the rest from the chain's heavier-tailed likelihood.
 \end{itemize}
 \end{block}
 
