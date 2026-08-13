@@ -339,7 +339,7 @@ Across \(D=16\)--\(1024\), \(\sigma_c\propto h^{-1}\) for RT and
 % ============ column 3: the measurement, then the real test ============
 \begin{column}{0.31\paperwidth}
 
-\begin{block}{Honest error bars on real Gaia data}
+\begin{block}{Empirical study on real Gaia data}
 We predict each star's alpha abundance plus a per-star scatter from its
 Gaia XP spectrum (110 coefficients), for 126{,}156 giants with APOGEE
 labels\refmark{4,5}, using a \(D = 11{,}394\) network sampled with
@@ -370,6 +370,9 @@ minibatch ray tracing.
   \item The gains held on real data: held-out stars were 27\% more
     probable than under the single fit, and an effective sample took
     3.3\(\times\) less data than full-batch sampling.
+  \item The theory held as well: gradient noise can only turn a
+    constant-speed ray, and the predicted noise tolerance (\(p=1\),
+    against \(p=\tfrac12\) for HMC) matched at every dimension we tested.
 \end{itemize}
 \end{block}
 
