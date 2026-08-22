@@ -1,0 +1,78 @@
+device cuda, train 100,924, test 25,232, D = 11,394
+[bigstep tune] batch=4096  dt=0.0001  Eq.33 acceptance=0.00
+[bigstep tune] batch=4096  dt=5e-05  Eq.33 acceptance=0.06
+[bigstep tune] batch=4096  dt=2e-05  Eq.33 acceptance=0.33
+[bigstep tune] batch=4096  dt=1e-05  Eq.33 acceptance=0.47
+[bigstep] batch=4096, chosen dt=1e-05
+[convergepack dt=1e-05] resumed from pack final state, sigma_sto = 2,090.9
+[convergepack dt=1e-05] misfit -1166/811.8 level; wnorm +770.6/231 moving; sig_med -0.0007024/0.0004011 level
+[dt=1e-05] sigma_sto = 2,090.9 nats -> Eq.33 exponent 4.78e-04
+[dt=1e-05] 500,000 steps in 48.8 min -> misfit -204,961, wnorm 21,715 of shell D=11,394, sigma(x) median 0.0313 [0.0145, 0.0616], acceptance 0.51, saved exp7h_rt33_dt1e-05_cont1.npz
+[convergepack dt=1e-05] -> in transit; misfit -1460/781.4 level; wnorm +1002/301.5 moving; sig_med -0.0006625/0.0003765 level
+[dt=1e-05] sigma_sto = 2,090.9 nats -> Eq.33 exponent 4.78e-04
+[dt=1e-05] 500,000 steps in 50.6 min -> misfit -205,310, wnorm 22,249 of shell D=11,394, sigma(x) median 0.0313 [0.0146, 0.0621], acceptance 0.52, saved exp7h_rt33_dt1e-05_cont2.npz
+[convergepack dt=1e-05] -> in transit; misfit -1728/767.7 moving; wnorm +1354/404.2 moving; sig_med -0.0003851/0.0003217 level
+[dt=1e-05] sigma_sto = 2,090.9 nats -> Eq.33 exponent 4.78e-04
+[dt=1e-05] 500,000 steps in 48.6 min -> misfit -205,503, wnorm 22,683 of shell D=11,394, sigma(x) median 0.0315 [0.0147, 0.0621], acceptance 0.53, saved exp7h_rt33_dt1e-05_cont3.npz
+[convergepack dt=1e-05] -> in transit; misfit -1726/715.9 moving; wnorm +1773/517.2 moving; sig_med -0.000455/0.0003092 level
+[dt=1e-05] sigma_sto = 2,090.9 nats -> Eq.33 exponent 4.78e-04
+[dt=1e-05] 500,000 steps in 49.5 min -> misfit -205,593, wnorm 22,756 of shell D=11,394, sigma(x) median 0.0312 [0.0145, 0.0617], acceptance 0.52, saved exp7h_rt33_dt1e-05_cont4.npz
+[convergepack dt=1e-05] -> in transit; misfit -1543/613.2 moving; wnorm +1825/533.8 moving; sig_med -0.0005559/0.0002993 level
+[dt=1e-05] sigma_sto = 2,090.9 nats -> Eq.33 exponent 4.78e-04
+[dt=1e-05] 500,000 steps in 52.0 min -> misfit -205,881, wnorm 22,827 of shell D=11,394, sigma(x) median 0.0312 [0.0146, 0.0620], acceptance 0.52, saved exp7h_rt33_dt1e-05_cont5.npz
+[convergepack dt=1e-05] -> in transit; misfit -1429/549.3 moving; wnorm +1401/427.4 moving; sig_med -0.0006251/0.0003026 moving
+[dt=1e-05] sigma_sto = 2,090.9 nats -> Eq.33 exponent 4.78e-04
+[dt=1e-05] 500,000 steps in 50.2 min -> misfit -206,039, wnorm 22,953 of shell D=11,394, sigma(x) median 0.0311 [0.0142, 0.0625], acceptance 0.52, saved exp7h_rt33_dt1e-05_cont6.npz
+[convergepack dt=1e-05] -> in transit; misfit -1234/496.4 moving; wnorm +947.5/308.3 moving; sig_med -0.0003956/0.0002745 level
+EXP7H-DONE
+device cuda, train 100,924, test 25,232, D = 11,394
+[convergepack dt=1e-05] resumed from pack final state, sigma_sto = 1,946.7
+[convergepack dt=1e-05] misfit -1234/496.4 moving; wnorm +947.5/308.3 moving; sig_med -0.0003956/0.0002745 level
+[dt=1e-05] sigma_sto = 1,946.7 nats -> Eq.33 exponent 5.14e-04
+[dt=1e-05] 500,000 steps in 48.1 min -> misfit -206,138, wnorm 23,240 of shell D=11,394, sigma(x) median 0.0308 [0.0144, 0.0618], acceptance 0.46, saved exp7h_rt33_dt1e-05_cont7.npz
+[convergepack dt=1e-05] -> in transit; misfit -1174/478 moving; wnorm +736.5/231.6 moving; sig_med -0.0002125/0.0002486 level
+[dt=1e-05] sigma_sto = 1,946.7 nats -> Eq.33 exponent 5.14e-04
+[dt=1e-05] 500,000 steps in 48.8 min -> misfit -206,399, wnorm 23,310 of shell D=11,394, sigma(x) median 0.0310 [0.0141, 0.0617], acceptance 0.48, saved exp7h_rt33_dt1e-05_cont8.npz
+[convergepack dt=1e-05] -> in transit; misfit -1014/438.4 moving; wnorm +692.8/213.1 moving; sig_med -4.588e-05/0.0002352 level
+[dt=1e-05] sigma_sto = 1,946.7 nats -> Eq.33 exponent 5.14e-04
+[dt=1e-05] 500,000 steps in 49.4 min -> misfit -206,550, wnorm 23,519 of shell D=11,394, sigma(x) median 0.0312 [0.0143, 0.0621], acceptance 0.49, saved exp7h_rt33_dt1e-05_cont9.npz
+[convergepack dt=1e-05] -> in transit; misfit -936.5/419.5 moving; wnorm +795/240.8 moving; sig_med +0.0001083/0.0002364 level
+[dt=1e-05] sigma_sto = 1,946.7 nats -> Eq.33 exponent 5.14e-04
+[dt=1e-05] 500,000 steps in 51.0 min -> misfit -206,731, wnorm 23,782 of shell D=11,394, sigma(x) median 0.0310 [0.0143, 0.0616], acceptance 0.47, saved exp7h_rt33_dt1e-05_cont10.npz
+[convergepack dt=1e-05] -> in transit; misfit -926/417.2 moving; wnorm +1006/298.6 moving; sig_med +2.605e-05/0.0002448 level
+[dt=1e-05] sigma_sto = 1,946.7 nats -> Eq.33 exponent 5.14e-04
+[dt=1e-05] 500,000 steps in 47.8 min -> misfit -206,690, wnorm 23,896 of shell D=11,394, sigma(x) median 0.0313 [0.0142, 0.0620], acceptance 0.48, saved exp7h_rt33_dt1e-05_cont11.npz
+[convergepack dt=1e-05] -> in transit; misfit -953/431.8 moving; wnorm +1128/331.4 moving; sig_med -2.213e-05/0.0002457 level
+[dt=1e-05] sigma_sto = 1,946.7 nats -> Eq.33 exponent 5.14e-04
+[dt=1e-05] 500,000 steps in 49.2 min -> misfit -206,651, wnorm 23,873 of shell D=11,394, sigma(x) median 0.0313 [0.0142, 0.0623], acceptance 0.48, saved exp7h_rt33_dt1e-05_cont12.npz
+[convergepack dt=1e-05] -> in transit; misfit -920.6/423.3 moving; wnorm +1029/308.1 moving; sig_med -6.072e-05/0.0002437 level
+EXP7H-DONE
+device cuda, train 100,924, test 25,232, D = 11,394
+[convergepack dt=1e-05] resumed from pack final state, sigma_sto = 2,059.7
+[convergepack dt=1e-05] misfit -920.6/423.3 moving; wnorm +1029/308.1 moving; sig_med -6.072e-05/0.0002437 level
+[dt=1e-05] sigma_sto = 2,059.7 nats -> Eq.33 exponent 4.86e-04
+[dt=1e-05] 500,000 steps in 49.3 min -> misfit -206,942, wnorm 23,822 of shell D=11,394, sigma(x) median 0.0309 [0.0139, 0.0616], acceptance 0.51, saved exp7h_rt33_dt1e-05_cont13.npz
+[convergepack dt=1e-05] -> in transit; misfit -847.4/424.5 level; wnorm +773.5/250.4 moving; sig_med +1.147e-05/0.0002477 level
+[dt=1e-05] sigma_sto = 2,059.7 nats -> Eq.33 exponent 4.86e-04
+[dt=1e-05] 500,000 steps in 47.1 min -> misfit -206,957, wnorm 23,972 of shell D=11,394, sigma(x) median 0.0313 [0.0144, 0.0622], acceptance 0.50, saved exp7h_rt33_dt1e-05_cont14.npz
+[convergepack dt=1e-05] -> in transit; misfit -888.8/441.7 moving; wnorm +697.4/232.1 moving; sig_med -0.0001742/0.0002571 level
+[dt=1e-05] sigma_sto = 2,059.7 nats -> Eq.33 exponent 4.86e-04
+[dt=1e-05] 500,000 steps in 49.6 min -> misfit -207,232, wnorm 24,166 of shell D=11,394, sigma(x) median 0.0308 [0.0139, 0.0627], acceptance 0.50, saved exp7h_rt33_dt1e-05_cont15.npz
+[convergepack dt=1e-05] -> in transit; misfit -918.1/450.1 moving; wnorm +619.1/208.1 moving; sig_med -0.0002977/0.0002682 level
+[dt=1e-05] sigma_sto = 2,059.7 nats -> Eq.33 exponent 4.86e-04
+[dt=1e-05] 500,000 steps in 50.5 min -> misfit -207,107, wnorm 24,289 of shell D=11,394, sigma(x) median 0.0312 [0.0141, 0.0620], acceptance 0.50, saved exp7h_rt33_dt1e-05_cont16.npz
+[convergepack dt=1e-05] -> in transit; misfit -873.2/446.4 level; wnorm +575.6/187.4 moving; sig_med -0.0003478/0.000274 level
+[dt=1e-05] sigma_sto = 2,059.7 nats -> Eq.33 exponent 4.86e-04
+[dt=1e-05] 500,000 steps in 50.5 min -> misfit -207,694, wnorm 24,258 of shell D=11,394, sigma(x) median 0.0305 [0.0140, 0.0614], acceptance 0.51, saved exp7h_rt33_dt1e-05_cont17.npz
+[convergepack dt=1e-05] -> in transit; misfit -905.9/459 level; wnorm +571.4/184.3 moving; sig_med -0.0004212/0.0002814 level
+[dt=1e-05] sigma_sto = 2,059.7 nats -> Eq.33 exponent 4.86e-04
+[dt=1e-05] 500,000 steps in 50.3 min -> misfit -207,635, wnorm 24,088 of shell D=11,394, sigma(x) median 0.0314 [0.0142, 0.0618], acceptance 0.49, saved exp7h_rt33_dt1e-05_cont18.npz
+[convergepack dt=1e-05] -> in transit; misfit -923.9/461 moving; wnorm +541.6/180 moving; sig_med -0.0005019/0.0002899 level
+EXP7H-DONE
+device cuda, train 100,924, test 25,232, D = 11,394
+[convergepack dt=1e-05] resumed from pack final state, sigma_sto = 1,937.7
+[convergepack dt=1e-05] misfit -923.9/461 moving; wnorm +541.6/180 moving; sig_med -0.0005019/0.0002899 level
+[dt=1e-05] sigma_sto = 1,937.7 nats -> Eq.33 exponent 5.16e-04
+[dt=1e-05] 500,000 steps in 51.5 min -> misfit -200,016, wnorm 18,773 of shell D=11,394, sigma(x) median 0.0314 [0.0142, 0.0629], acceptance 0.73, saved exp7h_rt33_dt1e-05_cont19.npz
+[convergepack dt=1e-05] -> STATIONARY; misfit +843.2/3242 level; wnorm -1563/1316 level; sig_med -0.0003993/0.0003748 level
+EXP7H-DONE

@@ -82,3 +82,7 @@ poster_figures/
 !results/tables/exp7_gated5e6_members.npz
 !results/tables/exp7_map_weights.npz
 !results/tables/exp7_ensemble_weights.npz
+
+# stray latex scratch
+texput.log
+exp6_view.html

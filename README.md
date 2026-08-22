@@ -1,12 +1,49 @@
-# Ray Tracing Sampler: MNIST posterior experiments
+# Toward Scalable Bayesian Uncertainty for Machine Learning with the Ray Tracing Sampler
 
-Experiments on the public Ray Tracing Sampler (Behroozi 2025, arXiv:2510.25824)
-applied to small MNIST networks, all torch, fp32, reproducible on a laptop. The
-sampler is the author's released `raytrace_torch.py`, vendored pristine under
-`vendor/ray-tracing-sampler/` with its licenses.
+KAUST Academy Summer School (KASP) 2026, hosted at the University of Toronto Data
+Sciences Institute (SUDS).
+Student: Yasir Alsugair. Mentor: Prof. Joshua Speagle. Co-supervisor: Prof. Ricardo Baptista.
 
-**Start here: [`exp6_mnist_posterior.ipynb`](exp6_mnist_posterior.ipynb)** (executed,
-figures included; each results section says how to read its numbers).
+Experiments on the public Ray Tracing Sampler (Behroozi 2025, arXiv:2510.25824), a
+gradient-based MCMC method that carries a unit direction on a sphere instead of an
+unbounded momentum, so a noisy minibatch gradient can steer the chain but cannot heat
+it. The sampler is the author's released `raytrace_torch.py`, vendored pristine under
+`vendor/ray-tracing-sampler/` with its licenses. Everything here is torch, fp32.
+
+## Submission map
+
+| Deliverable | Path |
+|---|---|
+| Final report (14 pp) | `docs/Report_Final.pdf` |
+| Poster (A0 landscape) | `poster/kasp_poster_v1.pdf` |
+| Weekly reports 1-3 | `docs/Report_1.pdf`, `docs/Report_2.pdf`, `docs/Report_3.pdf` |
+| MNIST ground truth (exp6) | `exp6_mnist_posterior.ipynb` |
+| Gaia campaign (exp7) | `exp7_gaia_posterior.ipynb`, `exp7_reference_run.md` |
+
+## The two experiment tracks
+
+**exp6, ground truth on MNIST.** Small networks (MLP D = 50,890, CNN D = 12,810) where
+full-batch exact chains are affordable, so every later minibatch shortcut has something
+to be checked against. Start at
+[`exp6_mnist_posterior.ipynb`](exp6_mnist_posterior.ipynb) (executed, figures included).
+
+**exp7, the Gaia campaign.** Gaia XP coefficients (55 BP + 55 RP) to [alpha/M] for
+126,156 giant stars with APOGEE labels, the target behind Laroche & Speagle 2025
+(ApJ 979, 5). An 110-64-64-1 tanh MLP, D = 11,394, sampled with minibatch ray tracing
+and the Eq. 33 noise-softened gate, then certified with an exact full-batch finisher.
+Start at [`exp7_gaia_posterior.ipynb`](exp7_gaia_posterior.ipynb); the full campaign
+log, including every convergence decision, is in
+[`exp7_reference_run.md`](exp7_reference_run.md).
+
+## Data
+
+- **MNIST** downloads automatically through torchvision on first run.
+- **Gaia XP / APOGEE**: Zenodo record 14041773 (Laroche & Speagle 2025),
+  <https://zenodo.org/records/14041773>. Public, no NDA. The pristine giant cut used
+  here (126,156 stars, split seed 2003, 80/20) is reproduced by the notebook from that
+  download; the derived arrays are not committed because of size.
+
+## exp6 in detail
 
 The study: an MLP (51k params) and a small CNN (13k) with the loss-to-posterior
 relation derived exactly (ln L = -N * CE, prior N(0,1) or flat), sampled full batch
@@ -81,3 +118,46 @@ outputs carry the numbers, and the scripts reproduce the files. The earlier
 600-trajectory CNN chain is still in git history, and `exp6_last_state_cnn.npz`
 continues the 20,000-trajectory rerun (produced on a rented GPU via the script's
 `runlegs` mode).
+
+## exp7: running the Gaia campaign
+
+```
+./.venv/bin/pip install torch numpy scipy matplotlib astropy
+./.venv/bin/python experiments/exp7_predictive_figures.py     # predictive figures
+```
+
+The campaign itself was run on rented GPUs over several weeks (roughly $85 to $90 of
+cloud time) and is not a single-command reproduction. `exp7_reference_run.md` records
+every arm, its settings, its drift series, and why it was kept or dropped, so any single
+rung can be re-run from the settings printed there. The noise-model ladder is the thing
+to read first: held-out z standard deviation falls 6.88 -> 6.23 -> 0.95 -> 1.08 as the
+likelihood gains a scatter term, a fitted scale, and a heteroscedastic sigma(x). The
+chain of record is the rung-2 heteroscedastic chain; the rung-3 Student-t chain
+(nu = 5.48, certified at 8.5M steps) has the best held-out NLL of any method tried.
+
+## Poster
+
+`poster/kasp_poster_v1.tex` builds the A0 landscape KASP poster:
+
+```
+cd poster && pdflatex kasp_poster_v1.tex
+```
+
+Needs a LaTeX installation with `beamerposter` (TinyTeX is enough) and the logo files in
+`poster/figures/`. `suds_poster_v9.tex` is the earlier SUDS version this was adapted
+from, joint work with Chuxuan Ai.
+
+## Honest scope
+
+Validated here: robustness to stochastic-gradient noise, with measured step-size laws
+(sigma_c proportional to h^-1 for ray tracing, h^-1/2 for HMC), a companion theoretical
+derivation by the mentor that matches the published tolerances within 30%, and a working
+application on a real survey at D = 11,394.
+
+Partial: the cost story. At matched accuracy the gate-passing saving was about 1.5x at
+batch 256 on one problem. Larger speedup figures from these runs come from
+configurations that fail their own accuracy gate and are not quoted.
+
+Open: width honesty (4-5% PIT under-coverage), anisotropic noise in practice (whitening
+untested), single chains only (no multi-chain R-hat), scale beyond D = 11.4k, and mode
+coverage on disconnected targets (not exercised here, no claim made).
